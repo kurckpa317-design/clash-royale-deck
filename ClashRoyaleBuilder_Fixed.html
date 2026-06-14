@@ -1,0 +1,78 @@
+
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Clash Royale Deck Builder</title>
+<style>
+body{font-family:Arial;background:#eef2f7;margin:20px}
+h1{text-align:center}
+.deck{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:20px}
+.slot,.card{background:#fff;border-radius:10px;padding:12px;text-align:center}
+.slot{min-height:50px;border:2px dashed #999}
+.cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:8px}
+.card{cursor:pointer;border:1px solid #ddd}
+.card:hover{transform:scale(1.03)}
+button{padding:8px 12px;margin-top:10px}
+</style>
+</head>
+<body>
+<h1>🏆 Конструктор колод Clash Royale</h1>
+
+<h3>Колода (0/8)</h3>
+<div class="deck" id="deck"></div>
+<p>Средний эликсир: <span id="avg">0</span></p>
+<button onclick="clearDeck()">Очистить</button>
+
+<h3>Карты</h3>
+<div class="cards" id="cards"></div>
+
+<script>
+const cards=[
+["Лучницы",3],["Рыцарь",3],["Гигант",5],["Мушкетёр",4],
+["Валькирия",4],["Хог Райдер",4],["Принц",5],["Мега Рыцарь",7],
+["Огненный шар",4],["Стрелы",3],["Бревно",2],["Ракета",6],
+["Скелеты",1],["Ледяной дух",1],["Летучие мыши",2],["Тесла",4]
+];
+
+let deck=[];
+
+function renderDeck(){
+ const el=document.getElementById('deck');
+ el.innerHTML='';
+ for(let i=0;i<8;i++){
+   const d=document.createElement('div');
+   d.className='slot';
+   d.textContent=deck[i] ? deck[i][0]+' ⚡'+deck[i][1] : 'Пусто';
+   el.appendChild(d);
+ }
+ document.querySelector('h3').textContent=`Колода (${deck.length}/8)`;
+ const avg=deck.length ? (deck.reduce((s,c)=>s+c[1],0)/deck.length).toFixed(1) : 0;
+ document.getElementById('avg').textContent=avg;
+}
+
+function addCard(card){
+ if(deck.length>=8){ alert('Колода заполнена'); return; }
+ deck.push(card);
+ renderDeck();
+}
+
+function clearDeck(){
+ deck=[];
+ renderDeck();
+}
+
+const cardsEl=document.getElementById('cards');
+cards.forEach(card=>{
+ const d=document.createElement('div');
+ d.className='card';
+ d.innerHTML='<b>'+card[0]+'</b><br>⚡'+card[1];
+ d.onclick=()=>addCard(card);
+ cardsEl.appendChild(d);
+});
+
+renderDeck();
+</script>
+</body>
+</html>
