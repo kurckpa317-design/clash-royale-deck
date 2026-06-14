@@ -1,78 +1,1163 @@
-
 <!DOCTYPE html>
 <html lang="ru">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Clash Royale Deck Builder</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Clash Royale — Конструктор колод 2026</title>
 <style>
-body{font-family:Arial;background:#eef2f7;margin:20px}
-h1{text-align:center}
-.deck{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:20px}
-.slot,.card{background:#fff;border-radius:10px;padding:12px;text-align:center}
-.slot{min-height:50px;border:2px dashed #999}
-.cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:8px}
-.card{cursor:pointer;border:1px solid #ddd}
-.card:hover{transform:scale(1.03)}
-button{padding:8px 12px;margin-top:10px}
+@import url('https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@700&family=Inter:wght@400;500;600;700&display=swap');
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --gold:#F5C842;--gold-dk:#C4992A;--bg:#0D1B2A;--card-bg:#122240;
+  --border:#2A4A7A;--text:#E8EEFF;--muted:#7A9AC0;--red:#E84040;
+  --green:#3DCB7A;--purple:#9B59E8;--orange:#F5832A;
+  --evo:#00E5FF;--hero:#FF6B35;
+}
+body{background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;min-height:100vh;overflow-x:hidden}
+header{text-align:center;padding:28px 20px 14px;background:linear-gradient(180deg,#07111c,transparent)}
+header::after{content:'';display:block;width:180px;height:3px;background:linear-gradient(90deg,transparent,var(--gold),transparent);margin:10px auto 0}
+header h1{font-family:'Cinzel Decorative',cursive;font-size:clamp(1.2rem,4vw,2rem);background:linear-gradient(135deg,#ffe080,var(--gold),#c4842a);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+header p{color:var(--muted);font-size:.82rem;margin-top:4px}
+/* GLOBAL CARD SEARCH */
+.global-search-wrap{max-width:1280px;margin:0 auto;padding:0 12px 4px}
+.global-search-box{position:relative}
+.global-search-box input{width:100%;padding:11px 18px 11px 44px;border-radius:12px;border:1px solid var(--border);background:#0e1f33;color:var(--text);font-size:.92rem;outline:none;transition:border-color .2s,box-shadow .2s}
+.global-search-box input:focus{border-color:var(--gold);box-shadow:0 0 0 3px #f5c84218}
+.global-search-box .gs-icon{position:absolute;left:14px;top:50%;transform:translateY(-50%);font-size:1.1rem;pointer-events:none}
+.gs-results{background:#0e1f33;border:1px solid var(--border);border-radius:12px;margin-top:6px;overflow:hidden;display:none}
+.gs-results.open{display:block}
+.gs-header{font-size:.7rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;padding:8px 14px 4px}
+.gs-group{padding:0 10px 10px}
+.gs-cards-row{display:flex;flex-wrap:wrap;gap:7px;padding-top:4px}
+.gs-card{width:76px;border-radius:9px;background:var(--card-bg);border:2px solid transparent;cursor:pointer;position:relative;overflow:hidden;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:4px;gap:2px;transition:transform .15s,border-color .15s,box-shadow .15s;aspect-ratio:3/4}
+.gs-card:hover{transform:translateY(-3px) scale(1.04);border-color:var(--gold);box-shadow:0 6px 18px #00000066}
+.gs-card.in-deck{border-color:var(--green);opacity:.55;pointer-events:none}
+.gs-card.is-evo{border-color:#00e5ff33}.gs-card.is-evo:hover{border-color:var(--evo)}
+.gs-card.is-hero{border-color:#ff6b3533}.gs-card.is-hero:hover{border-color:var(--hero)}
+.gs-card-bg{position:absolute;inset:0;opacity:.1}
+.gs-card img{width:68%;aspect-ratio:1;object-fit:contain;position:relative;z-index:1}
+.gs-card-fallback{font-size:1.7rem;position:relative;z-index:1}
+.gs-card-name{font-size:.44rem;font-weight:600;text-align:center;line-height:1.2;position:relative;z-index:1}
+.gs-card-cost{position:absolute;top:2px;left:3px;font-size:.65rem;font-weight:800;color:#d8b0ff;background:#00000066;border-radius:3px;padding:0 2px;z-index:2}
+.gs-card-tag{position:absolute;top:2px;right:2px;font-size:.48rem;font-weight:800;padding:1px 3px;border-radius:3px;z-index:2}
+.gs-dot{position:absolute;bottom:2px;width:72%;height:3px;border-radius:2px;z-index:2}
+.gs-empty{color:var(--muted);font-size:.82rem;text-align:center;padding:16px}
+main{max-width:1280px;margin:0 auto;padding:0 12px 60px;display:grid;gap:18px}
+.section{background:linear-gradient(135deg,#0d1e35,#102240);border:1px solid var(--border);border-radius:14px;padding:16px 14px}
+.sec-title{font-size:.85rem;font-weight:700;color:var(--gold);letter-spacing:.06em;text-transform:uppercase;margin-bottom:12px}
+.deck-header{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:6px;margin-bottom:12px}
+.elixir-badge{background:#4B1A8A;border:1px solid var(--purple);border-radius:18px;padding:3px 11px;font-size:.78rem;font-weight:700;color:#d8b0ff}
+.btn-sm{background:none;border:1px solid var(--red);color:var(--red);border-radius:6px;padding:3px 9px;font-size:.74rem;cursor:pointer}
+.btn-sm:hover{background:#e8404022}
+.deck-slots{display:grid;grid-template-columns:repeat(4,1fr);gap:7px}
+@media(min-width:480px){.deck-slots{grid-template-columns:repeat(8,1fr)}}
+.special-row{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:10px}
+.special-box{border-radius:9px;padding:9px}
+.evo-box{border:1px dashed #00e5ff44}
+.hero-box{border:1px dashed #ff6b3544}
+.special-label{font-size:.65rem;font-weight:700;text-transform:uppercase;letter-spacing:.05em;margin-bottom:5px}
+.evo-label{color:var(--evo)}.hero-label{color:var(--hero)}
+.special-slots-inner{display:grid;grid-template-columns:1fr 1fr;gap:5px}
+.slot{aspect-ratio:3/4;border:2px dashed var(--border);border-radius:8px;display:flex;flex-direction:column;align-items:center;justify-content:center;cursor:pointer;background:#0a1828;position:relative;overflow:hidden;min-width:0;transition:border-color .2s}
+.slot.filled{border-style:solid;border-color:var(--gold-dk);background:var(--card-bg);cursor:default}
+.slot.filled:hover{border-color:var(--red)}
+.slot.filled:hover::after{content:'✕';position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:1.2rem;background:#00000099;color:var(--red);pointer-events:none}
+.slot.evo-slot.filled{border-color:var(--evo);box-shadow:0 0 8px #00e5ff33}
+.slot.hero-slot.filled{border-color:var(--hero);box-shadow:0 0 8px #ff6b3333}
+.slot.locked{border-color:#F5C842 !important;box-shadow:0 0 8px #f5c84244 !important}
+.slot.locked::before{content:'🔒';position:absolute;bottom:2px;right:3px;font-size:.55rem;z-index:3}
+.slot-inner{width:100%;height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:2px;gap:1px}
+.slot-img{width:70%;aspect-ratio:1;object-fit:contain}
+.slot-name{font-size:.42rem;font-weight:600;text-align:center;line-height:1.2;color:var(--text)}
+.slot-cost{position:absolute;top:2px;left:3px;font-size:.65rem;font-weight:800;color:#d8b0ff;background:#00000066;border-radius:3px;padding:0 2px;z-index:2}
+.slot-badge{position:absolute;top:2px;right:2px;font-size:.48rem;font-weight:800;border-radius:3px;padding:1px 3px}
+.badge-evo{background:#00e5ff22;color:var(--evo);border:1px solid var(--evo)}
+.badge-hero{background:#ff6b3522;color:var(--hero);border:1px solid var(--hero)}
+.slot-empty-icon{font-size:1.3rem;opacity:.2}
+.deck-actions{margin-top:10px;display:flex;gap:6px;flex-wrap:wrap}
+.btn{border-radius:7px;padding:6px 14px;font-size:.8rem;font-weight:700;cursor:pointer;transition:transform .12s;border:none}
+.btn:active{transform:scale(.97)}
+.btn-gold{background:linear-gradient(135deg,var(--gold),var(--gold-dk));color:#1a0a00;box-shadow:0 3px 12px #f5c84244}
+.btn-outline{background:transparent;border:1px solid var(--border);color:var(--muted)}
+.btn-outline:hover{border-color:var(--gold);color:var(--gold)}
+.btn-lock{background:linear-gradient(135deg,#2a4a7a,#1a3a6e);border:1px solid #4a7aaa;color:#a0c8f0}
+.btn-lock:hover{border-color:var(--gold);color:var(--gold)}
+.btn-fix-rand{background:linear-gradient(135deg,#1a4a1a,#0d3020);border:1px solid #3dcb7a66;color:var(--green);font-size:.78rem}
+.btn-fix-rand:hover{border-color:var(--green);box-shadow:0 0 10px #3dcb7a33}
+.info-row{display:grid;grid-template-columns:1fr 1fr;gap:7px;margin-top:9px}
+.info-box{border-radius:7px;padding:7px 9px;font-size:.68rem;line-height:1.5}
+.info-evo{background:#00e5ff0d;border:1px solid #00e5ff33;color:#a0f0ff}
+.info-hero{background:#ff6b350d;border:1px solid #ff6b3333;color:#ffb09a}
+.info-box b{display:block;font-size:.72rem;margin-bottom:2px}
+/* Lock hint */
+.lock-hint{background:#1a3a1a;border:1px solid #3dcb7a44;border-radius:8px;padding:8px 10px;margin-top:8px;font-size:.72rem;color:var(--green);display:none}
+.lock-hint.show{display:block}
+/* TABS */
+.tab-bar{display:flex;gap:3px;margin-bottom:9px;border-bottom:1px solid var(--border);padding-bottom:7px;flex-wrap:wrap}
+.tab{padding:4px 12px;border-radius:6px 6px 0 0;border:1px solid transparent;background:transparent;color:var(--muted);font-size:.75rem;font-weight:700;cursor:pointer;transition:all .2s}
+.tab.active{background:var(--card-bg);border-color:var(--border);color:var(--gold)}
+.filter-row{display:flex;gap:5px;flex-wrap:wrap;align-items:center;margin-bottom:5px}
+.filter-label{font-size:.7rem;color:var(--muted)}
+.chip{padding:3px 9px;border-radius:14px;border:1px solid var(--border);background:transparent;color:var(--muted);font-size:.7rem;font-weight:600;cursor:pointer;transition:all .18s}
+.chip:hover,.chip.active{border-color:var(--gold);color:var(--gold);background:#f5c84214}
+.search-box{padding:4px 11px;border-radius:14px;border:1px solid var(--border);background:#0a1828;color:var(--text);font-size:.76rem;outline:none;width:140px}
+.search-box:focus{border-color:#2155a3}
+/* CARDS GRID */
+.cards-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(72px,1fr));gap:6px;margin-top:9px}
+.card{aspect-ratio:3/4;border-radius:9px;background:var(--card-bg);border:2px solid transparent;cursor:pointer;position:relative;overflow:hidden;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:3px;gap:1px;transition:transform .15s,border-color .15s,box-shadow .15s}
+.card:hover{transform:translateY(-3px) scale(1.04);box-shadow:0 7px 20px #00000077;border-color:var(--gold)}
+.card.in-deck{border-color:var(--green);opacity:.5;pointer-events:none}
+.card.is-evo{border-color:#00e5ff33}.card.is-evo:hover{border-color:var(--evo)}
+.card.is-hero{border-color:#ff6b3333}.card.is-hero:hover{border-color:var(--hero)}
+.card-bg{position:absolute;inset:0;opacity:.1}
+.t-troop .card-bg{background:linear-gradient(135deg,#2155a3,#0d1b2a)}
+.t-spell .card-bg{background:linear-gradient(135deg,#9b59e8,#0d1b2a)}
+.t-building .card-bg{background:linear-gradient(135deg,#c4842a,#0d1b2a)}
+.card-img{width:72%;aspect-ratio:1;object-fit:contain;position:relative;z-index:1}
+.card-fallback{font-size:clamp(1.2rem,2.5vw,1.8rem);position:relative;z-index:1}
+.card-name{font-size:.44rem;font-weight:600;text-align:center;line-height:1.2;position:relative;z-index:1}
+.card-cost{position:absolute;top:2px;left:3px;font-size:.65rem;font-weight:800;color:#d8b0ff;background:#00000066;border-radius:3px;padding:0 2px;z-index:2}
+.card-tag{position:absolute;top:2px;right:2px;font-size:.48rem;font-weight:800;padding:1px 3px;border-radius:3px;z-index:2}
+.tag-evo{background:#00e5ff22;color:var(--evo);border:1px solid #00e5ff66}
+.tag-hero{background:#ff6b3522;color:var(--hero);border:1px solid #ff6b3566}
+.tag-champ{background:#e8404022;color:var(--red);border:1px solid #e8404066}
+.card-dot{position:absolute;bottom:2px;width:72%;height:3px;border-radius:2px;z-index:2}
+.r-common{background:#888}.r-rare{background:var(--orange)}.r-epic{background:var(--purple)}
+.r-legendary{background:var(--gold);box-shadow:0 0 4px var(--gold)}.r-champion{background:var(--red);box-shadow:0 0 4px var(--red)}
+/* COUNTER */
+.counter-section{background:linear-gradient(135deg,#0d1e35,#102240);border:1px solid var(--border);border-radius:14px;padding:16px 14px}
+.counter-tabs{display:flex;gap:5px;margin-bottom:12px;flex-wrap:wrap}
+.ctab{padding:5px 14px;border-radius:7px;border:1px solid var(--border);background:transparent;color:var(--muted);font-size:.76rem;font-weight:700;cursor:pointer;transition:all .2s}
+.ctab.active{background:#1a3a6e;border-color:#2155a3;color:var(--text)}
+.counter-search input{padding:5px 12px;border-radius:8px;border:1px solid var(--border);background:#0a1828;color:var(--text);font-size:.8rem;outline:none;width:100%;margin-bottom:10px}
+.counter-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(70px,1fr));gap:6px}
+.counter-card{aspect-ratio:3/4;border-radius:8px;background:var(--card-bg);border:2px solid var(--border);cursor:pointer;position:relative;overflow:hidden;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:3px;gap:1px;transition:all .18s}
+.counter-card:hover{border-color:var(--gold);transform:scale(1.04)}
+.counter-card.selected{border-color:#00e5ff;box-shadow:0 0 10px #00e5ff44;background:#0a1e2e}
+.counter-result{margin-top:14px;background:#0a1828;border:1px solid var(--border);border-radius:10px;padding:12px}
+.counter-result-title{font-size:.8rem;font-weight:700;color:var(--gold);margin-bottom:10px}
+.counter-list{display:grid;grid-template-columns:repeat(auto-fill,minmax(68px,1fr));gap:6px}
+.counter-item{border-radius:8px;padding:6px 4px;display:flex;flex-direction:column;align-items:center;gap:2px}
+.counter-item-img{width:50px;height:50px;object-fit:contain}
+.counter-item-fallback{font-size:1.8rem}
+.counter-item-name{font-size:.48rem;font-weight:600;text-align:center;color:var(--text)}
+.counter-item-reason{font-size:.42rem;color:var(--muted);text-align:center;line-height:1.3}
+.counter-why{background:#0d2030;border:1px solid #1a4060;border-radius:8px;padding:10px;margin-top:10px;font-size:.72rem;color:var(--muted);line-height:1.6}
+.counter-why b{color:var(--text)}
+.badge-strength{display:inline-block;padding:1px 6px;border-radius:10px;font-size:.6rem;font-weight:700;margin-left:4px}
+.bs-hard{background:#e8404022;color:var(--red);border:1px solid #e8404055}
+.bs-medium{background:#f5c84222;color:var(--gold);border:1px solid #f5c84255}
+.bs-soft{background:#3dcb7a22;color:var(--green);border:1px solid #3dcb7a55}
+.no-counter{color:var(--muted);font-size:.78rem;padding:10px 0;text-align:center}
+/* DECK COUNTER INLINE */
+#deck-counter-result{background:#0a1828;border:1px solid var(--border);border-radius:10px;padding:12px;margin-top:10px}
+/* SAVED */
+.saved-list{display:flex;flex-direction:column;gap:7px}
+.saved-row{background:#0a1828;border:1px solid var(--border);border-radius:8px;padding:7px 10px;display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+.saved-name{font-size:.78rem;font-weight:700;min-width:80px}
+.saved-cards{display:flex;gap:3px;flex-wrap:wrap}
+.mc{width:24px;height:30px;border-radius:4px;background:var(--card-bg);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;overflow:hidden}
+.mc img{width:22px;height:22px;object-fit:contain}
+.mc-evo{border-color:#00e5ff55}.mc-hero{border-color:#ff6b3555}
+.saved-elixir{font-size:.72rem;font-weight:700;color:#d8b0ff;background:#4b1a8a44;border:1px solid #9b59e844;border-radius:14px;padding:2px 7px}
+.btn-load{margin-left:auto;border:1px solid #2155a3;background:transparent;color:#7ab0e0;border-radius:5px;padding:2px 8px;font-size:.7rem;font-weight:700;cursor:pointer}
+.btn-load:hover{background:#2155a322}
+.btn-del{border:1px solid #e8404055;background:transparent;color:var(--red);border-radius:5px;padding:2px 8px;font-size:.7rem;font-weight:700;cursor:pointer}
+.btn-del:hover{background:#e8404022}
+.empty{color:var(--muted);font-size:.78rem}
+.no-results{color:var(--muted);font-size:.8rem;text-align:center;padding:16px}
+#toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);padding:8px 20px;border-radius:24px;font-size:.8rem;font-weight:600;opacity:0;transition:opacity .3s;pointer-events:none;z-index:999;white-space:nowrap}
+#toast.show{opacity:1}
+#mo{position:fixed;inset:0;background:#00000088;display:none;align-items:center;justify-content:center;z-index:500}
+#mo.open{display:flex}
+#modal{background:#122240;border:1px solid var(--border);border-radius:12px;padding:22px 18px;max-width:310px;width:90%}
+#modal h3{color:var(--gold);margin-bottom:11px;font-size:.95rem}
+#modal input{width:100%;padding:7px 11px;border-radius:7px;border:1px solid var(--border);background:#0a1828;color:var(--text);font-size:.85rem;outline:none;margin-bottom:11px}
+#modal input:focus{border-color:#2155a3}
+.modal-btns{display:flex;gap:7px}
+.modal-btns .btn{flex:1;text-align:center}
 </style>
 </head>
 <body>
-<h1>🏆 Конструктор колод Clash Royale</h1>
+<header>
+  <h1>⚔ Clash Royale</h1>
+  <p>Конструктор колод + Контр-пики | 2026</p>
+</header>
+<!-- GLOBAL CARD SEARCH -->
+<div class="global-search-wrap">
+  <div class="global-search-box">
+    <span class="gs-icon">🔍</span>
+    <input id="gs-input" placeholder="Поиск карты... (например: Рыцарь, Гоблин, Шахтёр)" oninput="gsSearch(this.value)" autocomplete="off">
+  </div>
+  <div class="gs-results" id="gs-results"></div>
+</div>
 
-<h3>Колода (0/8)</h3>
-<div class="deck" id="deck"></div>
-<p>Средний эликсир: <span id="avg">0</span></p>
-<button onclick="clearDeck()">Очистить</button>
+<main>
 
-<h3>Карты</h3>
-<div class="cards" id="cards"></div>
+<!-- DECK -->
+<section class="section">
+  <div class="deck-header">
+    <div class="sec-title" style="margin-bottom:0">🃏 Моя колода</div>
+    <div style="display:flex;gap:7px;align-items:center;flex-wrap:wrap">
+      <div class="elixir-badge">💎 Среднее: <strong id="avg-elixir">—</strong></div>
+      <button class="btn-sm" onclick="clearDeck()">Очистить</button>
+    </div>
+  </div>
+  <div class="deck-slots" id="deck-slots"></div>
+  <div class="special-row">
+    <div class="special-box evo-box">
+      <div class="special-label evo-label">⚡ Эволюции (макс 2)</div>
+      <div class="special-slots-inner" id="evo-slots"></div>
+    </div>
+    <div class="special-box hero-box">
+      <div class="special-label hero-label">🦸 Герои (макс 2)</div>
+      <div class="special-slots-inner" id="hero-slots"></div>
+    </div>
+  </div>
+  <div class="info-row">
+    <div class="info-box info-evo"><b>⚡ Эволюции</b>Улучшенные версии карт. До 2 слотов в колоде.</div>
+    <div class="info-box info-hero"><b>🦸 Герои</b>Карты с активной способностью. Макс 2.</div>
+  </div>
+  <div class="deck-actions">
+    <button class="btn btn-gold" onclick="openModal()">💾 Сохранить</button>
+    <button class="btn btn-outline" onclick="randomDeck()">🎲 Полный рандом</button>
+    <button class="btn btn-fix-rand" onclick="fixAndRandom()">🔒🎲 Зафикс. + рандом</button>
+    <button class="btn btn-lock" onclick="toggleLockMode()">🔒 Фиксация: <span id="lock-mode-label">Выкл</span></button>
+    <button class="btn btn-outline" onclick="copyDeck()">📋 Копировать</button>
+    <button class="btn btn-outline" onclick="showDeckCounter()">🛡 Контр-пики</button>
+  </div>
+  <!-- РАСШИРЕННЫЙ РАНДОМ -->
+  <div style="margin-top:8px;display:flex;gap:6px;flex-wrap:wrap">
+    <button class="btn" style="background:linear-gradient(135deg,#1a2a4a,#0d1e35);border:1px solid #3a6aaa;color:#88bbee;font-size:.76rem" onclick="randomByArchetype()">🏆 Рандом по архетипу</button>
+    <button class="btn" style="background:linear-gradient(135deg,#2a1a3a,#1a0d2a);border:1px solid #7a4aaa;color:#bb88ee;font-size:.76rem" onclick="randomByCost()">💎 Рандом по зелью</button>
+    <button class="btn" style="background:linear-gradient(135deg,#1a3a1a,#0d2010);border:1px solid #3aaa4a;color:#88ee88;font-size:.76rem" onclick="randomMeta()">🔥 Мета-рандом</button>
+    <button class="btn" style="background:linear-gradient(135deg,#3a2a0a,#2a1a00);border:1px solid #aaaa3a;color:#eeee88;font-size:.76rem" onclick="randomChaos()">💥 ХАОС</button>
+  </div>
+  <div class="lock-hint" id="lock-hint">🔒 Режим фиксации включён — нажимай на карты в колоде чтобы зафиксировать их. Затем нажми «🔒🎲 Зафикс. + рандом» для заполнения остальных.</div>
+  <div id="rand-result" style="display:none;margin-top:8px;background:#0a1828;border:1px solid var(--border);border-radius:8px;padding:8px 10px;font-size:.75rem;color:var(--muted)"></div>
+  <div id="deck-counter-result" style="display:none"></div>
+</section>
+
+<!-- COUNTER -->
+<section class="counter-section">
+  <div class="sec-title">🛡 Контр-пики карт и колод</div>
+  <div class="counter-tabs">
+    <button class="ctab active" onclick="setCTab(this,'card')">🃏 Против карты</button>
+    <button class="ctab" onclick="setCTab(this,'deck')">📋 Против колоды</button>
+  </div>
+  <div class="counter-search"><input id="csearch" placeholder="🔍 Найти карту..." oninput="renderCounterGrid()"></div>
+  <div class="counter-grid" id="counter-grid"></div>
+  <div id="counter-result" style="display:none"></div>
+</section>
+
+<!-- CATALOG -->
+<section class="section">
+  <div class="sec-title">📦 Каталог карт</div>
+  <div class="tab-bar">
+    <button class="tab active" onclick="setTab(this,'all')">Все</button>
+    <button class="tab" onclick="setTab(this,'cards')">🃏 Карты</button>
+    <button class="tab" onclick="setTab(this,'evos')" style="color:var(--evo)">⚡ Эволюции</button>
+    <button class="tab" onclick="setTab(this,'heroes')" style="color:var(--hero)">🦸 Герои</button>
+  </div>
+  <div class="filter-row">
+    <span class="filter-label">Тип:</span>
+    <button class="chip active" data-ftype="all" onclick="fType(this,'all')">Все</button>
+    <button class="chip" data-ftype="troop" onclick="fType(this,'troop')">🗡 Войска</button>
+    <button class="chip" data-ftype="spell" onclick="fType(this,'spell')">✨ Заклинания</button>
+    <button class="chip" data-ftype="building" onclick="fType(this,'building')">🏰 Постройки</button>
+  </div>
+  <div class="filter-row">
+    <span class="filter-label">Редкость:</span>
+    <button class="chip active" data-fra="all" onclick="fRar(this,'all')">Все</button>
+    <button class="chip" data-fra="common" onclick="fRar(this,'common')">Обычная</button>
+    <button class="chip" data-fra="rare" onclick="fRar(this,'rare')">Редкая</button>
+    <button class="chip" data-fra="epic" onclick="fRar(this,'epic')">Эпическая</button>
+    <button class="chip" data-fra="legendary" onclick="fRar(this,'legendary')">Легенд.</button>
+    <button class="chip" data-fra="champion" onclick="fRar(this,'champion')">Чемпион</button>
+    <input class="search-box" placeholder="🔍 Поиск..." oninput="fSearch(this.value)">
+  </div>
+  <div class="cards-grid" id="cards-grid"></div>
+</section>
+
+<!-- SAVED -->
+<section class="section">
+  <div class="sec-title">🗂 Сохранённые колоды</div>
+  <div class="saved-list" id="saved-list"></div>
+</section>
+
+</main>
+<div id="toast"></div>
+<div id="mo">
+  <div id="modal">
+    <h3>💾 Сохранить колоду</h3>
+    <input id="din" placeholder="Название..." maxlength="28">
+    <div class="modal-btns">
+      <button class="btn btn-gold" onclick="saveDeck()">Сохранить</button>
+      <button class="btn btn-outline" onclick="closeMo()">Отмена</button>
+    </div>
+  </div>
+</div>
 
 <script>
-const cards=[
-["Лучницы",3],["Рыцарь",3],["Гигант",5],["Мушкетёр",4],
-["Валькирия",4],["Хог Райдер",4],["Принц",5],["Мега Рыцарь",7],
-["Огненный шар",4],["Стрелы",3],["Бревно",2],["Ракета",6],
-["Скелеты",1],["Ледяной дух",1],["Летучие мыши",2],["Тесла",4]
-];
-
-let deck=[];
-
-function renderDeck(){
- const el=document.getElementById('deck');
- el.innerHTML='';
- for(let i=0;i<8;i++){
-   const d=document.createElement('div');
-   d.className='slot';
-   d.textContent=deck[i] ? deck[i][0]+' ⚡'+deck[i][1] : 'Пусто';
-   el.appendChild(d);
- }
- document.querySelector('h3').textContent=`Колода (${deck.length}/8)`;
- const avg=deck.length ? (deck.reduce((s,c)=>s+c[1],0)/deck.length).toFixed(1) : 0;
- document.getElementById('avg').textContent=avg;
+// ── ИЗОБРАЖЕНИЯ ───────────────────────────────────────────────────
+const WIKI='https://static.wikia.nocookie.net/clashroyale/images';
+const IMG={
+  рыцарь:'Knight.png',лучницы:'Archers.png',великан:'Giant.png',
+  'п.е.к.к.а':'P.E.K.K.A.png',миньоны:'Minions.png',
+  'воздушный шар':'Balloon.png',ведьма:'Witch.png',
+  дракончик:'Baby_Dragon.png',принц:'Prince.png',
+  скелеты:'Skeletons.png',гоблины:'Goblins.png',
+  валькирия:'Valkyrie.png',мушкетёрша:'Musketeer.png',
+  'наездник на свинье':'Hog_Rider.png','мини п.е.к.к.а':'Mini_P.E.K.K.A.png',
+  'мега-рыцарь':'Mega_Knight.png','электромаг':'Electro_Wizard.png',
+  дровосек:'Lumberjack.png','всадница на таране':'Ram_Rider.png',
+  'sparky':'Sparky.png','огненный дракон':'Inferno_Dragon.png',
+  шахтёр:'Miner.png','гоблин-великан':'Goblin_Giant.png',
+  варвары:'Barbarians.png','королевский великан':'Royal_Giant.png',
+  'элитные варвары':'Elite_Barbarians.png','дух огня':'Fire_Spirit.png',
+  'дух льда':'Ice_Spirit.png','летучие мыши':'Bats.png',
+  'ночная ведьма':'Night_Witch.png',бандитка:'Bandit.png',
+  призрак:'Ghost.png','маг-лучник':'Magic_Archer.png',
+  рыбак:'Fisherman.png',охотник:'Hunter.png',
+  палач:'Executioner.png','ледяной голем':'Ice_Golem.png',
+  'пушка-тачка':'Cannon_Cart.png','тёмный принц':'Dark_Prince.png',
+  голем:'Golem.png','лавовый пёс':'Lava_Hound.png',
+  'электро-великан':'Electro_Giant.png','огненная лучница':'Firecracker.png',
+  стенобои:'Wall_Breakers.png','эликсирный голем':'Elixir_Golem.png',
+  'мега-миньон':'Mega_Minion.png','летающая машина':'Flying_Machine.png',
+  'армия скелетов':'Skeleton_Army.png','орда миньонов':'Minion_Horde.png',
+  'банда гоблинов':'Goblin_Gang.png','гоблины-копейщики':'Spear_Goblins.png',
+  беспризорники:'Rascals.png','бочка со скелетом':'Skeleton_Barrel.png',
+  'электро-гоблины':'Zappies.png','королевские кабаны':'Royal_Hogs.png',
+  'монстр гоблинштейн':'Goblinstein.png','электро-дух':'Electro_Spirit.png',
+  'ледяной маг':'Ice_Wizard.png',принцесса:'Princess.png',
+  'гоблин-дротикомёт':'Dart_Goblin.png',феникс:'Phoenix.png',
+  'маленький принц':'Little_Prince.png','костяные драконы':'Bone_Dragon.png',
+  'гоблинский бур':'Goblin_Drill.png','королевские рекруты':'Royal_Recruits.png',
+  'большой снежок':'Giant_Snowball.png','доктор гоблинштейн':'Doctor_Goblinstein.png',
+  // спеллы
+  'огненный шар':'Fireball.png',стрелы:'Arrows.png',молния:'Lightning.png',
+  заморозка:'Freeze.png',ракета:'Rocket.png',разряд:'Zap.png',
+  ярость:'Rage.png',землетрясение:'Earthquake.png',
+  'королевская доставка':'Royal_Delivery.png',яд:'Poison.png',
+  снежок:'Snowball.png','брёвнышко':'The_Log.png',
+  'бочка с варварами':'Barbarian_Barrel.png',кладбище:'Graveyard.png',
+  клон:'Clone.png',торнадо:'Tornado.png','дух исцеления':'Heal_Spirit.png',
+  пустота:'Void.png',
+  // постройки
+  пушка:'Cannon.png','катушка тесла':'Tesla.png','башня с бомбами':'Bomb_Tower.png',
+  'адская башня':'Inferno_Tower.png','арбалет':'X-Bow.png',мортира:'Mortar.png',
+  'клетка с гоблином':'Goblin_Cage.png',надгробие:'Tombstone.png',
+  'хижина гоблинов':'Goblin_Hut.png','хижина варваров':'Barbarian_Hut.png',
+  'коллектор эликсира':'Elixir_Collector.png',
+  // чемпионы
+  'королева лучниц':'Archer_Queen.png','король скелетов':'Skeleton_King.png',
+  'золотой рыцарь':'Golden_Knight.png',монах:'Monk.png',
+  // главная бандитка
+  'главная бандитка':'Bandit.png',
+};
+function imgUrl(name){
+  const k=name.toLowerCase().trim();
+  const f=IMG[k];
+  if(f) return WIKI+'/'+f+'/revision/latest/scale-to-width-down/150';
+  return null;
+}
+function cardImg(name,cls){
+  const url=imgUrl(name);
+  if(url) return `<img class="${cls}" src="${url}" alt="${name}" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><span class="${cls.replace('-img','-fallback')}" style="display:none">${EMOJI[name.toLowerCase()]||'❓'}</span>`;
+  return `<span class="${cls.replace('-img','-fallback')}">${EMOJI[name.toLowerCase()]||'❓'}</span>`;
 }
 
-function addCard(card){
- if(deck.length>=8){ alert('Колода заполнена'); return; }
- deck.push(card);
- renderDeck();
+// ── ДАННЫЕ КАРТ (официальные русские названия) ────────────────────
+const CARDS=[
+// ОБЫЧНЫЕ
+{id:'knight',name:'Рыцарь',emoji:'⚔️',cost:3,type:'troop',rarity:'common'},
+{id:'archers',name:'Лучницы',emoji:'🏹',cost:3,type:'troop',rarity:'common'},
+{id:'goblins',name:'Гоблины',emoji:'👺',cost:2,type:'troop',rarity:'common'},
+{id:'barbarians',name:'Варвары',emoji:'🪖',cost:5,type:'troop',rarity:'common'},
+{id:'minions',name:'Миньоны',emoji:'🦇',cost:3,type:'troop',rarity:'common'},
+{id:'skeleton',name:'Скелеты',emoji:'💀',cost:1,type:'troop',rarity:'common'},
+{id:'spear_goblins',name:'Гоблины-копейщики',emoji:'🎯',cost:2,type:'troop',rarity:'common'},
+{id:'minion_horde',name:'Орда миньонов',emoji:'🦇',cost:5,type:'troop',rarity:'common'},
+{id:'goblin_gang',name:'Банда гоблинов',emoji:'👺',cost:3,type:'troop',rarity:'common'},
+{id:'royal_giant',name:'Королевский великан',emoji:'👑',cost:6,type:'troop',rarity:'common'},
+{id:'rascals',name:'Беспризорники',emoji:'👦',cost:5,type:'troop',rarity:'common'},
+{id:'fire_spirit',name:'Дух огня',emoji:'🔥',cost:1,type:'troop',rarity:'common'},
+{id:'ice_spirit',name:'Дух льда',emoji:'🧊',cost:1,type:'troop',rarity:'common'},
+{id:'skeleton_barrel',name:'Бочка со скелетом',emoji:'💀',cost:3,type:'troop',rarity:'common'},
+{id:'electro_spirit',name:'Электро-дух',emoji:'⚡',cost:1,type:'troop',rarity:'common'},
+{id:'bats',name:'Летучие мыши',emoji:'🦇',cost:2,type:'troop',rarity:'common'},
+{id:'firecracker',name:'Огненная лучница',emoji:'🔥',cost:3,type:'troop',rarity:'common'},
+// ОБЫЧНЫЕ ЗАКЛИНАНИЯ
+{id:'arrows',name:'Стрелы',emoji:'🏹',cost:3,type:'spell',rarity:'common'},
+{id:'zap',name:'Разряд',emoji:'⚡',cost:2,type:'spell',rarity:'common'},
+{id:'snowball',name:'Снежок',emoji:'☃️',cost:2,type:'spell',rarity:'common'},
+{id:'royal_delivery',name:'Королевская доставка',emoji:'📦',cost:3,type:'spell',rarity:'common'},
+{id:'giant_snowball',name:'Большой снежок',emoji:'⛄',cost:2,type:'spell',rarity:'common'},
+// ОБЫЧНЫЕ ПОСТРОЙКИ
+{id:'cannon',name:'Пушка',emoji:'💣',cost:3,type:'building',rarity:'common'},
+{id:'tesla',name:'Катушка Тесла',emoji:'⚡',cost:4,type:'building',rarity:'common'},
+{id:'bomb_tower',name:'Башня с бомбами',emoji:'💥',cost:4,type:'building',rarity:'common'},
+{id:'mortar',name:'Мортира',emoji:'🎯',cost:4,type:'building',rarity:'common'},
+// РЕДКИЕ ВОЙСКА
+{id:'giant',name:'Великан',emoji:'🦣',cost:5,type:'troop',rarity:'rare'},
+{id:'valkyrie',name:'Валькирия',emoji:'🌀',cost:4,type:'troop',rarity:'rare'},
+{id:'musketeer',name:'Мушкетёрша',emoji:'🔫',cost:4,type:'troop',rarity:'rare'},
+{id:'hog_rider',name:'Наездник на свинье',emoji:'🐗',cost:4,type:'troop',rarity:'rare'},
+{id:'mini_pekka',name:'Мини П.Е.К.К.А',emoji:'🗡️',cost:4,type:'troop',rarity:'rare'},
+{id:'ice_golem',name:'Ледяной голем',emoji:'🧊',cost:2,type:'troop',rarity:'rare'},
+{id:'elite_barbs',name:'Элитные варвары',emoji:'🗡',cost:6,type:'troop',rarity:'rare'},
+{id:'mega_minion',name:'Мега-миньон',emoji:'🦇',cost:3,type:'troop',rarity:'rare'},
+{id:'flying_machine',name:'Летающая машина',emoji:'✈️',cost:4,type:'troop',rarity:'rare'},
+{id:'zappies',name:'Электро-гоблины',emoji:'⚡',cost:4,type:'troop',rarity:'rare'},
+{id:'royal_hogs',name:'Королевские кабаны',emoji:'🐷',cost:5,type:'troop',rarity:'rare'},
+{id:'elixir_golem',name:'Эликсирный голем',emoji:'💎',cost:3,type:'troop',rarity:'rare'},
+{id:'dart_goblin',name:'Гоблин-дротикомёт',emoji:'🎯',cost:3,type:'troop',rarity:'rare'},
+{id:'three_musk',name:'Три мушкетёрши',emoji:'🔫',cost:9,type:'troop',rarity:'rare'},
+// РЕДКИЕ ЗАКЛИНАНИЯ
+{id:'fireball',name:'Огненный шар',emoji:'💥',cost:4,type:'spell',rarity:'rare'},
+{id:'rocket',name:'Ракета',emoji:'🚀',cost:6,type:'spell',rarity:'rare'},
+{id:'earthquake',name:'Землетрясение',emoji:'🌍',cost:3,type:'spell',rarity:'rare'},
+{id:'heal_spirit',name:'Дух исцеления',emoji:'💚',cost:1,type:'spell',rarity:'rare'},
+// РЕДКИЕ ПОСТРОЙКИ
+{id:'inferno_tower',name:'Адская башня',emoji:'🔥',cost:5,type:'building',rarity:'rare'},
+{id:'tombstone',name:'Надгробие',emoji:'⚰️',cost:3,type:'building',rarity:'rare'},
+{id:'goblin_hut',name:'Хижина гоблинов',emoji:'🛖',cost:5,type:'building',rarity:'rare'},
+{id:'barb_hut',name:'Хижина варваров',emoji:'🛖',cost:7,type:'building',rarity:'rare'},
+{id:'elixir_collector',name:'Коллектор эликсира',emoji:'💎',cost:6,type:'building',rarity:'rare'},
+// ЭПИЧЕСКИЕ ВОЙСКА
+{id:'pekka',name:'П.Е.К.К.А',emoji:'🤖',cost:7,type:'troop',rarity:'epic'},
+{id:'balloon',name:'Воздушный шар',emoji:'🎈',cost:5,type:'troop',rarity:'epic'},
+{id:'witch',name:'Ведьма',emoji:'🧙',cost:5,type:'troop',rarity:'epic'},
+{id:'baby_dragon',name:'Дракончик',emoji:'🐉',cost:4,type:'troop',rarity:'epic'},
+{id:'prince',name:'Принц',emoji:'🤴',cost:5,type:'troop',rarity:'epic'},
+{id:'goblin_giant',name:'Гоблин-великан',emoji:'👺',cost:6,type:'troop',rarity:'epic'},
+{id:'hunter',name:'Охотник',emoji:'🎯',cost:4,type:'troop',rarity:'epic'},
+{id:'executioner',name:'Палач',emoji:'🪓',cost:5,type:'troop',rarity:'epic'},
+{id:'cannon_cart',name:'Пушка-тачка',emoji:'💥',cost:5,type:'troop',rarity:'epic'},
+{id:'dark_prince',name:'Тёмный принц',emoji:'🖤',cost:4,type:'troop',rarity:'epic'},
+{id:'golem',name:'Голем',emoji:'🗿',cost:8,type:'troop',rarity:'epic'},
+{id:'e_giant',name:'Электро-великан',emoji:'⚡',cost:7,type:'troop',rarity:'epic'},
+{id:'wall_breakers',name:'Стенобои',emoji:'💥',cost:2,type:'troop',rarity:'epic'},
+{id:'skeleton_army',name:'Армия скелетов',emoji:'💀',cost:3,type:'troop',rarity:'epic'},
+{id:'goblin_cage',name:'Клетка с гоблином',emoji:'👺',cost:4,type:'building',rarity:'epic'},
+{id:'bone_dragon',name:'Костяные драконы',emoji:'🐉',cost:4,type:'troop',rarity:'epic'},
+{id:'dr_goblinstein',name:'Доктор Гоблинштейн',emoji:'🧪',cost:4,type:'troop',rarity:'epic'},
+{id:'dropship',name:'Матушка-ведьма',emoji:'🚁',cost:4,type:'troop',rarity:'epic'},
+// ЭПИЧЕСКИЕ ЗАКЛИНАНИЯ
+{id:'lightning',name:'Молния',emoji:'⚡',cost:6,type:'spell',rarity:'epic'},
+{id:'freeze',name:'Заморозка',emoji:'❄️',cost:4,type:'spell',rarity:'epic'},
+{id:'rage',name:'Ярость',emoji:'😡',cost:2,type:'spell',rarity:'epic'},
+{id:'poison',name:'Яд',emoji:'☠️',cost:4,type:'spell',rarity:'epic'},
+{id:'barb_barrel',name:'Бочка с варварами',emoji:'🛢️',cost:3,type:'spell',rarity:'epic'},
+{id:'clone',name:'Клон',emoji:'👥',cost:3,type:'spell',rarity:'epic'},
+{id:'tornado',name:'Торнадо',emoji:'🌪️',cost:3,type:'spell',rarity:'epic'},
+// ЭПИЧЕСКИЕ ПОСТРОЙКИ
+{id:'xbow',name:'Арбалет',emoji:'🏹',cost:6,type:'building',rarity:'epic'},
+// ЛЕГЕНДАРНЫЕ ВОЙСКА
+{id:'mega_knight',name:'Мега-рыцарь',emoji:'🛡️',cost:7,type:'troop',rarity:'legendary'},
+{id:'electro_wizard',name:'Электромаг',emoji:'⚡',cost:4,type:'troop',rarity:'legendary'},
+{id:'lumberjack',name:'Дровосек',emoji:'🪓',cost:4,type:'troop',rarity:'legendary'},
+{id:'ram_rider',name:'Всадница на таране',emoji:'🐏',cost:5,type:'troop',rarity:'legendary'},
+{id:'sparky',name:'Sparky',emoji:'🔵',cost:6,type:'troop',rarity:'legendary'},
+{id:'inferno_dragon',name:'Огненный дракон',emoji:'🔥',cost:4,type:'troop',rarity:'legendary'},
+{id:'miner',name:'Шахтёр',emoji:'⛏️',cost:3,type:'troop',rarity:'legendary'},
+{id:'night_witch',name:'Ночная ведьма',emoji:'🌙',cost:5,type:'troop',rarity:'legendary'},
+{id:'bandit',name:'Бандитка',emoji:'🏃',cost:3,type:'troop',rarity:'legendary'},
+{id:'ghost',name:'Призрак',emoji:'👻',cost:3,type:'troop',rarity:'legendary'},
+{id:'magic_archer',name:'Маг-лучник',emoji:'🎯',cost:4,type:'troop',rarity:'legendary'},
+{id:'fisherman',name:'Рыбак',emoji:'🎣',cost:3,type:'troop',rarity:'legendary'},
+{id:'ice_wizard',name:'Ледяной маг',emoji:'❄️',cost:3,type:'troop',rarity:'legendary'},
+{id:'princess',name:'Принцесса',emoji:'👸',cost:3,type:'troop',rarity:'legendary'},
+{id:'phoenix',name:'Феникс',emoji:'🦅',cost:4,type:'troop',rarity:'legendary'},
+{id:'little_prince',name:'Маленький принц',emoji:'🌟',cost:3,type:'troop',rarity:'legendary'},
+{id:'goblinstein',name:'Монстр Гоблинштейн',emoji:'🟢',cost:5,type:'troop',rarity:'legendary'},
+{id:'lava_hound',name:'Лавовый пёс',emoji:'🌋',cost:7,type:'troop',rarity:'legendary'},
+{id:'royal_recruits',name:'Королевские рекруты',emoji:'🛡',cost:7,type:'troop',rarity:'legendary'},
+// ЛЕГЕНДАРНЫЕ ЗАКЛИНАНИЯ
+{id:'log',name:'Брёвнышко',emoji:'🪵',cost:2,type:'spell',rarity:'legendary'},
+{id:'graveyard',name:'Кладбище',emoji:'⚰️',cost:5,type:'spell',rarity:'legendary'},
+{id:'void',name:'Пустота',emoji:'🕳️',cost:4,type:'spell',rarity:'legendary'},
+// ГОБЛИНСКИЙ БУР
+{id:'goblin_drill',name:'Гоблинский бур',emoji:'⛏️',cost:4,type:'building',rarity:'epic'},
+];
+
+const EVOS=[
+{id:'evo_skeleton',name:'Эво. Скелеты',emoji:'💀',cost:1,type:'troop',rarity:'common',base:'Скелеты'},
+{id:'evo_archers',name:'Эво. Лучницы',emoji:'🏹',cost:3,type:'troop',rarity:'common',base:'Лучницы'},
+{id:'evo_knight',name:'Эво. Рыцарь',emoji:'⚔️',cost:3,type:'troop',rarity:'common',base:'Рыцарь'},
+{id:'evo_barbarians',name:'Эво. Варвары',emoji:'🪖',cost:5,type:'troop',rarity:'common',base:'Варвары'},
+{id:'evo_mortar',name:'Эво. Мортира',emoji:'🎯',cost:4,type:'building',rarity:'common',base:'Мортира'},
+{id:'evo_royal_giant',name:'Эво. Королевский великан',emoji:'👑',cost:6,type:'troop',rarity:'common',base:'Королевский великан'},
+{id:'evo_firecracker',name:'Эво. Огненная лучница',emoji:'🔥',cost:3,type:'troop',rarity:'common',base:'Огненная лучница'},
+{id:'evo_zap',name:'Эво. Разряд',emoji:'⚡',cost:2,type:'spell',rarity:'common',base:'Разряд'},
+{id:'evo_ice_spirit',name:'Эво. Дух льда',emoji:'🧊',cost:1,type:'troop',rarity:'common',base:'Дух льда'},
+{id:'evo_bats',name:'Эво. Летучие мыши',emoji:'🦇',cost:2,type:'troop',rarity:'common',base:'Летучие мыши'},
+{id:'evo_cannon',name:'Эво. Пушка',emoji:'💣',cost:3,type:'building',rarity:'common',base:'Пушка'},
+{id:'evo_tesla',name:'Эво. Катушка Тесла',emoji:'⚡',cost:4,type:'building',rarity:'common',base:'Катушка Тесла'},
+{id:'evo_electro_spirit',name:'Эво. Электро-дух',emoji:'⚡',cost:1,type:'troop',rarity:'common',base:'Электро-дух'},
+{id:'evo_valkyrie',name:'Эво. Валькирия',emoji:'🌀',cost:4,type:'troop',rarity:'rare',base:'Валькирия'},
+{id:'evo_mini_pekka',name:'Эво. Мини П.Е.К.К.А',emoji:'🗡️',cost:4,type:'troop',rarity:'rare',base:'Мини П.Е.К.К.А'},
+{id:'evo_giant',name:'Эво. Великан',emoji:'🦣',cost:5,type:'troop',rarity:'rare',base:'Великан'},
+{id:'evo_witch',name:'Эво. Ведьма',emoji:'🧙',cost:5,type:'troop',rarity:'epic',base:'Ведьма'},
+{id:'evo_executioner',name:'Эво. Палач',emoji:'🪓',cost:5,type:'troop',rarity:'epic',base:'Палач'},
+{id:'evo_goblin_drill',name:'Эво. Гоблинский бур',emoji:'⛏️',cost:4,type:'building',rarity:'epic',base:'Гоблинский бур'},
+{id:'evo_recruits',name:'Эво. Королевские рекруты',emoji:'🛡',cost:7,type:'troop',rarity:'legendary',base:'Королевские рекруты'},
+];
+
+const HEROES=[
+{id:'h_archer_queen',name:'Королева лучниц',emoji:'👸',cost:5,type:'troop',rarity:'champion',ability:'Плащ невидимки'},
+{id:'h_skeleton_king',name:'Король скелетов',emoji:'👑',cost:4,type:'troop',rarity:'champion',ability:'Сила скелетов'},
+{id:'h_golden_knight',name:'Золотой рыцарь',emoji:'✨',cost:4,type:'troop',rarity:'champion',ability:'Смертельный рывок'},
+{id:'h_monk',name:'Монах',emoji:'🥋',cost:5,type:'troop',rarity:'champion',ability:'Умиротворение'},
+{id:'h_little_prince',name:'Маленький принц',emoji:'🌟',cost:3,type:'troop',rarity:'champion',ability:'Страж'},
+{id:'h_goblinstein',name:'Монстр Гоблинштейн',emoji:'🟢',cost:5,type:'troop',rarity:'champion',ability:'Шок'},
+{id:'h_bandit_leader',name:'Главная бандитка',emoji:'🏃',cost:4,type:'troop',rarity:'champion',ability:'Разбойничья стая'},
+];
+
+const EMOJI={};
+[...CARDS,...EVOS,...HEROES].forEach(c=>{ EMOJI[c.name.toLowerCase()]=c.emoji; });
+
+const ALL=[...CARDS,...EVOS,...HEROES];
+const EVO_IDS=new Set(EVOS.map(e=>e.id));
+const HERO_IDS=new Set(HEROES.map(h=>h.id));
+
+let deck=[],evoSlots=[],heroSlots=[];
+let lockedDeck=new Set(); // индексы зафиксированных слотов
+let lockMode=false;
+let curTab='all',curType='all',curRar='all',curQ='';
+let counterTab='card',selCounter=null;
+
+window.onload=()=>{render();renderCatalog();renderSaved();renderCounterGrid()};
+
+// ── RENDER ────────────────────────────────────────────────────────
+function render(){
+  renderSlots('deck-slots',deck,8,false,false);
+  renderSlots('evo-slots',evoSlots,2,true,false);
+  renderSlots('hero-slots',heroSlots,2,false,true);
+  const all=[...deck,...evoSlots,...heroSlots];
+  const avg=all.length?all.reduce((s,id)=>{const c=byId(id);return s+(c?c.cost:0)},0)/all.length:0;
+  document.getElementById('avg-elixir').textContent=all.length?avg.toFixed(1):'—';
+}
+
+function renderSlots(containerId,arr,max,isEvo,isHero){
+  const c=document.getElementById(containerId);
+  c.innerHTML='';
+  for(let i=0;i<max;i++){
+    const s=document.createElement('div');
+    const filled=!!arr[i];
+    const isLocked=!isEvo&&!isHero&&lockedDeck.has(i);
+    s.className='slot'+(filled?' filled':'')+(isEvo&&filled?' evo-slot':'')+(isHero&&filled?' hero-slot':'')+(isLocked&&filled?' locked':'');
+    if(filled){
+      const cd=byId(arr[i]);
+      let badge=isEvo?'<span class="slot-badge badge-evo">ЭВО</span>':isHero?'<span class="slot-badge badge-hero">ГЕРОЙ</span>':'';
+      s.innerHTML=`<div class="slot-inner">${badge}<span class="slot-cost">${cd.cost}</span>${cardImg(cd.name,'slot-img')}<span class="slot-name">${cd.name}</span></div>`;
+      if(!isEvo&&!isHero){
+        const idx=i;
+        s.onclick=()=>{
+          if(lockMode){
+            if(lockedDeck.has(idx))lockedDeck.delete(idx);
+            else lockedDeck.add(idx);
+            render();
+          }else{
+            deck.splice(idx,1);
+            lockedDeck.delete(idx);
+            // сдвигаем заблокированные индексы
+            const newLocked=new Set();
+            lockedDeck.forEach(li=>{if(li>idx)newLocked.add(li-1);else newLocked.add(li);});
+            lockedDeck=newLocked;
+            render();renderCatalog();
+          }
+        };
+      }else if(isEvo){
+        s.onclick=()=>{evoSlots.splice(i,1);render();renderCatalog()};
+      }else{
+        s.onclick=()=>{heroSlots.splice(i,1);render();renderCatalog()};
+      }
+    }else{
+      s.innerHTML='<span class="slot-empty-icon">'+(isEvo?'⚡':isHero?'🦸':'+')+'</span>';
+    }
+    c.appendChild(s);
+  }
+}
+
+function renderCatalog(){
+  const grid=document.getElementById('cards-grid');
+  grid.innerHTML='';
+  let pool=curTab==='evos'?EVOS:curTab==='heroes'?HEROES:curTab==='cards'?CARDS:ALL;
+  const allDeck=new Set([...deck,...evoSlots,...heroSlots]);
+  let n=0;
+  pool.forEach(c=>{
+    if(curType!=='all'&&c.type!==curType)return;
+    if(curRar!=='all'&&c.rarity!==curRar)return;
+    if(curQ&&!c.name.toLowerCase().includes(curQ.toLowerCase()))return;
+    const isEvo=EVO_IDS.has(c.id),isHero=HERO_IDS.has(c.id),inDeck=allDeck.has(c.id);
+    const div=document.createElement('div');
+    div.className=`card t-${c.type}${inDeck?' in-deck':''}${isEvo?' is-evo':''}${isHero?' is-hero':''}`;
+    let tag=isEvo?'<span class="card-tag tag-evo">ЭВО</span>':isHero?'<span class="card-tag tag-hero">🦸</span>':(c.rarity==='champion'?'<span class="card-tag tag-champ">ЧЕМ</span>':'');
+    div.innerHTML=`<div class="card-bg"></div>${tag}<span class="card-cost">${c.cost}</span>${cardImg(c.name,'card-img')}<span class="card-name">${c.name}</span><div class="card-dot r-${c.rarity}"></div>`;
+    div.onclick=()=>addCard(c);
+    grid.appendChild(div);n++;
+  });
+  if(!n)grid.innerHTML='<div class="no-results">Ничего не найдено 🔍</div>';
+}
+
+// ── ДОБАВЛЕНИЕ КАРТ ───────────────────────────────────────────────
+function addCard(c){
+  if(EVO_IDS.has(c.id)){
+    if(evoSlots.includes(c.id))return;
+    if(evoSlots.length>=2){toast('Только 2 эволюции!',false);return;}
+    evoSlots.push(c.id);
+  }else if(HERO_IDS.has(c.id)){
+    if(heroSlots.includes(c.id))return;
+    if(heroSlots.length>=2){toast('Только 2 героя!',false);return;}
+    heroSlots.push(c.id);
+  }else{
+    if(deck.includes(c.id))return;
+    if(deck.length>=8){toast('Колода полна! (8 карт)',false);return;}
+    deck.push(c.id);
+  }
+  render();renderCatalog();
 }
 
 function clearDeck(){
- deck=[];
- renderDeck();
+  deck=[];evoSlots=[];heroSlots=[];lockedDeck=new Set();lockMode=false;
+  document.getElementById('lock-mode-label').textContent='Выкл';
+  document.getElementById('lock-hint').classList.remove('show');
+  render();renderCatalog();
 }
 
-const cardsEl=document.getElementById('cards');
-cards.forEach(card=>{
- const d=document.createElement('div');
- d.className='card';
- d.innerHTML='<b>'+card[0]+'</b><br>⚡'+card[1];
- d.onclick=()=>addCard(card);
- cardsEl.appendChild(d);
+function shuffle(arr){return [...arr].sort(()=>Math.random()-.5)}
+
+function randomDeck(){
+  // Несколько разных стратегий рандома — каждый раз случайная
+  const strategy=Math.floor(Math.random()*5);
+  let picked;
+  if(strategy===0){
+    // Полностью случайные 8 карт
+    picked=shuffle(CARDS).slice(0,8);
+  }else if(strategy===1){
+    // Минимум 1 спелл, 1 строение, остальные войска
+    const spells=shuffle(CARDS.filter(c=>c.type==='spell'));
+    const buildings=shuffle(CARDS.filter(c=>c.type==='building'));
+    const troops=shuffle(CARDS.filter(c=>c.type==='troop'));
+    picked=[spells[0],spells[1],buildings[0],...troops].slice(0,8);
+  }else if(strategy===2){
+    // Среднее зелье 3.0-4.0 (сбалансированная колода)
+    let attempts=0,best=[];
+    while(attempts<200){
+      const trial=shuffle(CARDS).slice(0,8);
+      const avg=trial.reduce((s,c)=>s+c.cost,0)/8;
+      if(avg>=2.8&&avg<=4.2){best=trial;break;}
+      attempts++;
+    }
+    picked=best.length?best:shuffle(CARDS).slice(0,8);
+  }else if(strategy===3){
+    // Хотя бы 2 легендарки
+    const legends=shuffle(CARDS.filter(c=>c.rarity==='legendary'));
+    const rest=shuffle(CARDS.filter(c=>c.rarity!=='legendary'));
+    picked=[...legends.slice(0,2),...rest].slice(0,8);
+  }else{
+    // Разнообразие: по 1-2 карты каждой редкости
+    const common=shuffle(CARDS.filter(c=>c.rarity==='common'));
+    const rare=shuffle(CARDS.filter(c=>c.rarity==='rare'));
+    const epic=shuffle(CARDS.filter(c=>c.rarity==='epic'));
+    const leg=shuffle(CARDS.filter(c=>c.rarity==='legendary'));
+    picked=[...common.slice(0,2),...rare.slice(0,2),...epic.slice(0,2),...leg.slice(0,2)];
+  }
+  deck=picked.map(c=>c.id);
+  // Случайно добавить 0-2 эволюции
+  const evoCount=Math.floor(Math.random()*3);
+  evoSlots=shuffle(EVOS).slice(0,evoCount).map(e=>e.id);
+  // Случайно добавить 0-1 героя
+  const heroCount=Math.random()>0.5?1:0;
+  heroSlots=shuffle(HEROES).slice(0,heroCount).map(h=>h.id);
+  lockedDeck=new Set();
+  render();renderCatalog();
+  const strats=['🎲 Случайные 8 карт','⚔️ Войска + заклинания + строение','⚖️ Сбалансированная колода','👑 С легендарками','🌈 Разнообразная по редкости'];
+  showRandResult(`${strats[strategy]} | Зелье: ${(deck.reduce((s,id)=>{const c=byId(id);return s+(c?c.cost:0)},0)/deck.length).toFixed(1)}`);
+}
+
+// ── РАНДОМ ПО АРХЕТИПУ ──────────────────────────────────────────
+const ARCHETYPES=[
+  {name:'🐗 Хог-цикл',ids:['hog_rider','cannon','fireball','log'],fill:'cycle'},
+  {name:'⛏️ Бур-Яд',ids:['goblin_drill','poison','log','ice_spirit'],fill:'cycle'},
+  {name:'🗿 Голем-Найт',ids:['golem','night_witch','lightning','barbarians'],fill:'beatdown'},
+  {name:'🌋 Лава-Пупс',ids:['lava_hound','balloon','arrows','mega_minion'],fill:'beatdown'},
+  {name:'🏹 Арбалет',ids:['xbow','tesla','log','ice_golem'],fill:'siege'},
+  {name:'🎯 Мортира',ids:['mortar','skeleton','earthquake','arrows'],fill:'siege'},
+  {name:'🤖 П.Е.К.К.А-мост',ids:['pekka','bandit','electro_wizard','fireball'],fill:'beatdown'},
+  {name:'🌪️ Голем-Торнадо',ids:['golem','executioner','tornado','lightning'],fill:'beatdown'},
+  {name:'👸 Грейвярд',ids:['graveyard','poison','knight','log'],fill:'control'},
+  {name:'⚡ Sparky-колода',ids:['sparky','goblin_gang','electro_wizard','log'],fill:'beatdown'},
+  {name:'🦣 Великан-Двойной принц',ids:['giant','prince','dark_prince','zap'],fill:'beatdown'},
+  {name:'🎈 Balloon-цикл',ids:['balloon','freeze','mega_minion','lumberjack'],fill:'beatdown'},
+  {name:'🔴 Стенобои-цикл',ids:['wall_breakers','hog_rider','fireball','log'],fill:'cycle'},
+  {name:'🧊 Голем-Ледяной маг',ids:['golem','ice_wizard','tornado','barbarians'],fill:'beatdown'},
+  {name:'🃏 Мега-рыцарь',ids:['mega_knight','skeleton_barrel','zap','log'],fill:'cycle'},
+];
+
+function randomByArchetype(){
+  const arch=ARCHETYPES[Math.floor(Math.random()*ARCHETYPES.length)];
+  const coreIds=new Set(arch.ids);
+  const coreCards=arch.ids.map(id=>CARDS.find(c=>c.id===id)).filter(Boolean);
+  const pool=shuffle(CARDS.filter(c=>!coreIds.has(c.id)));
+  let fill=[];
+  if(arch.fill==='cycle'){
+    // Дешёвые карты (1-3 зелья)
+    fill=pool.filter(c=>c.cost<=3).slice(0,8-coreCards.length);
+    if(fill.length<8-coreCards.length)fill=[...fill,...pool.filter(c=>c.cost>3)].slice(0,8-coreCards.length);
+  }else if(arch.fill==='siege'){
+    // Защитные карты
+    fill=pool.filter(c=>c.type==='building'||c.type==='spell').slice(0,3);
+    fill=[...fill,...pool.filter(c=>c.type==='troop')].slice(0,8-coreCards.length);
+  }else{
+    // Beatdown — тяжёлые + поддержка
+    fill=pool.slice(0,8-coreCards.length);
+  }
+  deck=[...coreCards,...fill].slice(0,8).map(c=>c.id);
+  evoSlots=shuffle(EVOS).slice(0,Math.random()>0.5?1:0).map(e=>e.id);
+  heroSlots=shuffle(HEROES).slice(0,Math.random()>0.6?1:0).map(h=>h.id);
+  lockedDeck=new Set();
+  render();renderCatalog();
+  showRandResult(`${arch.name} | Зелье: ${(deck.reduce((s,id)=>{const c=byId(id);return s+(c?c.cost:0)},0)/deck.length).toFixed(1)}`);
+}
+
+// ── РАНДОМ ПО ЗЕЛЬЮ ─────────────────────────────────────────────
+function randomByCost(){
+  const targets=[2.0,2.5,2.8,3.0,3.2,3.5,3.8,4.0,4.5,5.0];
+  const target=targets[Math.floor(Math.random()*targets.length)];
+  let best=[],bestDiff=99;
+  for(let attempt=0;attempt<500;attempt++){
+    const trial=shuffle(CARDS).slice(0,8);
+    const avg=trial.reduce((s,c)=>s+c.cost,0)/8;
+    const diff=Math.abs(avg-target);
+    if(diff<bestDiff){bestDiff=diff;best=trial;}
+    if(diff<0.15)break;
+  }
+  deck=best.map(c=>c.id);
+  evoSlots=shuffle(EVOS).slice(0,Math.random()>0.5?1:0).map(e=>e.id);
+  heroSlots=[];
+  lockedDeck=new Set();
+  render();renderCatalog();
+  const actual=(deck.reduce((s,id)=>{const c=byId(id);return s+(c?c.cost:0)},0)/deck.length).toFixed(1);
+  showRandResult(`💎 Цель: ${target} зелья → Получилось: ${actual} зелья`);
+}
+
+// ── МЕТА-РАНДОМ ─────────────────────────────────────────────────
+const META_PICKS=['hog_rider','goblin_drill','pekka','mega_knight','balloon','witch',
+  'lava_hound','golem','sparky','inferno_dragon','miner','night_witch','graveyard',
+  'poison','log','fireball','lightning','tornado','electro_wizard','lumberjack',
+  'ram_rider','bandit','magic_archer','princess','fisherman','phoenix','little_prince'];
+
+function randomMeta(){
+  // Берём 3-5 мета-карт + остальные рандом
+  const metaCount=3+Math.floor(Math.random()*3);
+  const metaPool=shuffle(META_PICKS.map(id=>CARDS.find(c=>c.id===id)).filter(Boolean));
+  const metaPicked=metaPool.slice(0,metaCount);
+  const metaIds=new Set(metaPicked.map(c=>c.id));
+  const restPool=shuffle(CARDS.filter(c=>!metaIds.has(c.id)));
+  const restPicked=restPool.slice(0,8-metaCount);
+  deck=[...metaPicked,...restPicked].map(c=>c.id);
+  // Мета-эволюции
+  const metaEvos=['evo_goblin_drill','evo_knight','evo_archers','evo_barbarians','evo_mortar'];
+  const evoCount=Math.random()>0.4?1:0;
+  evoSlots=shuffle(metaEvos.map(id=>EVOS.find(e=>e.id===id)).filter(Boolean)).slice(0,evoCount).map(e=>e.id);
+  heroSlots=shuffle(HEROES).slice(0,Math.random()>0.5?1:0).map(h=>h.id);
+  lockedDeck=new Set();
+  render();renderCatalog();
+  showRandResult(`🔥 Мета-рандом: ${metaCount} топ-карт + случайные | Зелье: ${(deck.reduce((s,id)=>{const c=byId(id);return s+(c?c.cost:0)},0)/deck.length).toFixed(1)}`);
+}
+
+// ── ХАОС ────────────────────────────────────────────────────────
+function randomChaos(){
+  // Максимально безумная колода — 9+ зелья, или все заклинания, или всё дешёвое
+  const mode=Math.floor(Math.random()*6);
+  let picked,desc;
+  if(mode===0){
+    // Только дорогие карты (5+ зелья)
+    const expensive=shuffle(CARDS.filter(c=>c.cost>=5));
+    picked=expensive.slice(0,8);
+    desc='💸 Только дорогие карты (5+ зелья)!';
+  }else if(mode===1){
+    // Только дешёвые (1-2 зелья)
+    const cheap=shuffle(CARDS.filter(c=>c.cost<=2));
+    const extra=shuffle(CARDS.filter(c=>c.cost===3));
+    picked=[...cheap,...extra].slice(0,8);
+    desc='🪙 Только дешёвые карты!';
+  }else if(mode===2){
+    // Только заклинания + 1 войско
+    const spells=shuffle(CARDS.filter(c=>c.type==='spell'));
+    const troop=shuffle(CARDS.filter(c=>c.type==='troop'));
+    picked=[...spells.slice(0,7),troop[0]];
+    desc='✨ Почти только заклинания!';
+  }else if(mode===3){
+    // Только строения + войска без заклинаний
+    const buildings=shuffle(CARDS.filter(c=>c.type==='building'));
+    const troops=shuffle(CARDS.filter(c=>c.type==='troop'));
+    picked=[...buildings,...troops].slice(0,8);
+    desc='🏰 Без заклинаний — только строения и войска!';
+  }else if(mode===4){
+    // Все легендарки + эпические
+    const leg=shuffle(CARDS.filter(c=>c.rarity==='legendary'));
+    const epic=shuffle(CARDS.filter(c=>c.rarity==='epic'));
+    picked=[...leg,...epic].slice(0,8);
+    desc='👑 Только легендарки и эпики!';
+  }else{
+    // Полный рандом 3 раза подряд — берём самую странную комбинацию
+    let trials=[];
+    for(let i=0;i<3;i++)trials.push(shuffle(CARDS).slice(0,8));
+    // Берём с наибольшим разнообразием типов
+    picked=trials.reduce((best,t)=>{
+      const types=new Set(t.map(c=>c.type)).size;
+      const bestTypes=new Set(best.map(c=>c.type)).size;
+      return types>=bestTypes?t:best;
+    });
+    desc='🌀 Абсолютный рандом х3!';
+  }
+  deck=picked.map(c=>c.id);
+  // В режиме хаос — всегда 2 эволюции и 1 герой
+  evoSlots=shuffle(EVOS).slice(0,2).map(e=>e.id);
+  heroSlots=shuffle(HEROES).slice(0,1).map(h=>h.id);
+  lockedDeck=new Set();
+  render();renderCatalog();
+  showRandResult(`💥 ХАОС: ${desc} | Зелье: ${(deck.reduce((s,id)=>{const c=byId(id);return s+(c?c.cost:0)},0)/deck.length).toFixed(1)}`);
+}
+
+function showRandResult(msg){
+  const el=document.getElementById('rand-result');
+  el.style.display='block';
+  el.innerHTML=`<span style="color:var(--gold)">▶</span> ${msg}`;
+}
+
+// ── ФИКСАЦИЯ + РАНДОМ ────────────────────────────────────────────
+function toggleLockMode(){
+  lockMode=!lockMode;
+  document.getElementById('lock-mode-label').textContent=lockMode?'Вкл':'Выкл';
+  const hint=document.getElementById('lock-hint');
+  if(lockMode)hint.classList.add('show');
+  else hint.classList.remove('show');
+  if(!lockMode)toast('Режим фиксации выключен');
+  else toast('🔒 Нажимай на карты в колоде чтобы зафиксировать!');
+}
+
+function fixAndRandom(){
+  if(deck.length===0){toast('Сначала добавь хотя бы одну карту!',false);return;}
+  if(!lockMode&&lockedDeck.size===0){
+    deck.forEach((_,i)=>lockedDeck.add(i));
+  }
+  const lockedIds=new Set();
+  lockedDeck.forEach(i=>{if(deck[i])lockedIds.add(deck[i])});
+  // Случайная стратегия для незафиксированных слотов
+  const strat=Math.floor(Math.random()*3);
+  let available;
+  if(strat===0) available=shuffle(CARDS.filter(c=>!lockedIds.has(c.id)));
+  else if(strat===1) available=shuffle(CARDS.filter(c=>!lockedIds.has(c.id)&&c.cost<=4));
+  else available=shuffle(CARDS.filter(c=>!lockedIds.has(c.id)&&(c.rarity==='epic'||c.rarity==='legendary')));
+  if(available.length<8-lockedDeck.size) available=shuffle(CARDS.filter(c=>!lockedIds.has(c.id)));
+  const newDeck=[];
+  let avIdx=0;
+  for(let i=0;i<8;i++){
+    if(lockedDeck.has(i)&&deck[i]) newDeck.push(deck[i]);
+    else if(avIdx<available.length) newDeck.push(available[avIdx++].id);
+  }
+  deck=newDeck;
+  render();renderCatalog();
+  const strats=['случайные','дешёвые','эпик/легенд.'];
+  showRandResult(`🔒 ${lockedDeck.size} зафиксировано + ${strats[strat]} карты | Зелье: ${(deck.reduce((s,id)=>{const c=byId(id);return s+(c?c.cost:0)},0)/deck.length).toFixed(1)}`);
+}
+
+function copyDeck(){
+  const n=[...deck.map(id=>byId(id)?.name),...evoSlots.map(id=>byId(id)?.name+' (Эво.'),...heroSlots.map(id=>byId(id)?.name+' (Герой)')].filter(Boolean).join(', ');
+  if(!n){toast('Колода пуста!',false);return;}
+  navigator.clipboard.writeText(n).catch(()=>{});toast('📋 Скопировано!');
+}
+
+// ── КОНТР-ПИКИ ────────────────────────────────────────────────────
+const COUNTERS={
+  hog_rider:[{id:'tesla',s:'hard',r:'Наносит мощный урон'},{id:'inferno_tower',s:'hard',r:'Быстро сжигает'},{id:'cannon',s:'medium',r:'Отвлекает и наносит урон'},{id:'mini_pekka',s:'medium',r:'Убивает с 2-3 ударов'},{id:'skeleton_army',s:'hard',r:'Рой мгновенно останавливает'},{id:'tornado',s:'hard',r:'Стягивает в здание'}],
+  goblin_drill:[{id:'fireball',s:'hard',r:'Уничтожает бур и гоблинов'},{id:'rocket',s:'hard',r:'Полностью уничтожает'},{id:'tornado',s:'medium',r:'Стягивает гоблинов'},{id:'earthquake',s:'medium',r:'Замедляет строение'},{id:'lightning',s:'hard',r:'Мгновенно уничтожает'}],
+  pekka:[{id:'skeleton_army',s:'hard',r:'Рой полностью блокирует'},{id:'tornado',s:'medium',r:'Стягивает под здание'},{id:'inferno_dragon',s:'hard',r:'Быстро прожигает'},{id:'inferno_tower',s:'hard',r:'Адская башня убивает'},{id:'mini_pekka',s:'soft',r:'Медленно, но эффективно'}],
+  mega_knight:[{id:'inferno_dragon',s:'hard',r:'Не даёт приземлиться'},{id:'skeleton_army',s:'hard',r:'Рой уничтожает при прыжке'},{id:'inferno_tower',s:'hard',r:'Удерживает и сжигает'},{id:'mini_pekka',s:'medium',r:'Высокий урон за удар'},{id:'poison',s:'soft',r:'Замедление рядом с башней'}],
+  balloon:[{id:'mega_minion',s:'hard',r:'Быстро уничтожает'},{id:'musketeer',s:'hard',r:'Высокий урон по воздуху'},{id:'arrows',s:'medium',r:'Убивает остатки'},{id:'minions',s:'medium',r:'Воздушные юниты'},{id:'tesla',s:'hard',r:'Атакует воздух'}],
+  lava_hound:[{id:'mega_minion',s:'hard',r:'Лучший контр воздуха'},{id:'musketeer',s:'hard',r:'Убивает быстро'},{id:'inferno_dragon',s:'hard',r:'Горит через высокое HP'},{id:'lightning',s:'medium',r:'Мощное заклинание'},{id:'electro_wizard',s:'hard',r:'Сбрасывает заряд'}],
+  royal_giant:[{id:'inferno_tower',s:'hard',r:'Не позволяет дойти'},{id:'tesla',s:'medium',r:'Хорошая защита'},{id:'pekka',s:'hard',r:'Высокий урон'},{id:'mini_pekka',s:'medium',r:'Быстро наносит урон'}],
+  golem:[{id:'inferno_dragon',s:'hard',r:'Прожигает высокое HP'},{id:'inferno_tower',s:'hard',r:'Адская башня держит'},{id:'lightning',s:'medium',r:'Убивает поддержку'},{id:'pekka',s:'medium',r:'Высокий DPS'}],
+  sparky:[{id:'zap',s:'hard',r:'Сбрасывает заряд моментально'},{id:'electro_wizard',s:'hard',r:'Сбрасывает заряд + урон'},{id:'skeleton_army',s:'hard',r:'Рой останавливает'},{id:'goblin_gang',s:'medium',r:'Дёшево и эффективно'}],
+  prince:[{id:'skeleton_army',s:'hard',r:'Рой блокирует разгон'},{id:'ice_spirit',s:'medium',r:'Сбивает разгон'},{id:'zap',s:'medium',r:'Замедляет'},{id:'valkyrie',s:'hard',r:'Убивает в равных условиях'}],
+  miner:[{id:'goblin_cage',s:'hard',r:'Привлекает Шахтёра'},{id:'cannon',s:'hard',r:'Привлекает и убивает'},{id:'tombstone',s:'medium',r:'Привлекает и создаёт скелетов'},{id:'skeleton',s:'medium',r:'Дешёвая блокировка'}],
+  witch:[{id:'lightning',s:'hard',r:'Убивает мгновенно'},{id:'rocket',s:'hard',r:'Уничтожает'},{id:'fireball',s:'medium',r:'Убивает + скелетов'},{id:'arrows',s:'medium',r:'Убивает скелетов'}],
+  inferno_dragon:[{id:'zap',s:'hard',r:'Сбрасывает заряд'},{id:'electro_wizard',s:'hard',r:'Сбрасывает + урон'},{id:'snowball',s:'medium',r:'Сбивает заряд и отталкивает'}],
+  skeleton_army:[{id:'arrows',s:'hard',r:'Убивает всех сразу'},{id:'fireball',s:'hard',r:'Уничтожает рой'},{id:'log',s:'hard',r:'Сносит весь рой'},{id:'zap',s:'medium',r:'Контролирует толпу'}],
+  goblin_gang:[{id:'fireball',s:'hard',r:'Убивает весь отряд'},{id:'valkyrie',s:'hard',r:'Сплэш по всем'},{id:'log',s:'medium',r:'Сносит гоблинов'}],
+  minion_horde:[{id:'arrows',s:'hard',r:'Уничтожает всех'},{id:'fireball',s:'hard',r:'Убивает толпу'},{id:'zap',s:'medium',r:'Оглушает'}],
+  xbow:[{id:'rocket',s:'hard',r:'Уничтожает строение'},{id:'lightning',s:'hard',r:'Мгновенный урон'},{id:'pekka',s:'hard',r:'Быстро ломает'},{id:'earthquake',s:'medium',r:'Наносит урон строению'}],
+  mortar:[{id:'earthquake',s:'hard',r:'Двойной урон по строениям'},{id:'goblin_drill',s:'hard',r:'Бурит прямо к башне'},{id:'lightning',s:'medium',r:'Уничтожает'}],
+  elite_barbs:[{id:'valkyrie',s:'hard',r:'Сплэш по обоим'},{id:'pekka',s:'hard',r:'Убивает обоих'},{id:'fireball',s:'medium',r:'Урон + замедление'},{id:'mini_pekka',s:'medium',r:'Высокий урон'}],
+  night_witch:[{id:'lightning',s:'hard',r:'Моментальное убийство'},{id:'rocket',s:'hard',r:'Уничтожает'},{id:'fireball',s:'medium',r:'Убивает + летучих мышей'}],
+  graveyard:[{id:'poison',s:'hard',r:'Убивает скелетов в зоне'},{id:'fireball',s:'hard',r:'Чистит кладбище'},{id:'arrows',s:'medium',r:'Убивает рой'}],
+  archers:[{id:'log',s:'hard',r:'Сносит'},{id:'arrows',s:'hard',r:'Убивает обеих'},{id:'zap',s:'medium',r:'Оглушает'}],
+  knight:[{id:'fireball',s:'medium',r:'Хороший урон'},{id:'mini_pekka',s:'hard',r:'Высокий урон'},{id:'poison',s:'soft',r:'Медленно убивает'}],
+  valkyrie:[{id:'fireball',s:'medium',r:'Хороший урон'},{id:'pekka',s:'hard',r:'Убивает быстро'},{id:'lightning',s:'hard',r:'Моментально'}],
+  musketeer:[{id:'zap',s:'hard',r:'Убивает с 1-2 башни'},{id:'fireball',s:'hard',r:'Убивает'},{id:'lightning',s:'hard',r:'Моментально'}],
+  baby_dragon:[{id:'mega_minion',s:'hard',r:'Убивает в воздухе'},{id:'musketeer',s:'hard',r:'Ранговый урон'},{id:'arrows',s:'medium',r:'Урон + поддержка'}],
+  princess:[{id:'log',s:'hard',r:'Откидывает за реку'},{id:'arrows',s:'hard',r:'Убивает'},{id:'zap',s:'medium',r:'Оглушает'}],
+  ice_wizard:[{id:'fireball',s:'hard',r:'Убивает'},{id:'lightning',s:'hard',r:'Моментально'},{id:'rocket',s:'hard',r:'Уничтожает'}],
+  barbarians:[{id:'fireball',s:'hard',r:'Убивает 5 из 5'},{id:'valkyrie',s:'hard',r:'Сплэш по всем'},{id:'log',s:'medium',r:'Сносит толпу'}],
+  ram_rider:[{id:'mini_pekka',s:'hard',r:'Убивает быстро'},{id:'skeleton_army',s:'hard',r:'Останавливает'},{id:'valkyrie',s:'medium',r:'Сплэш'}],
+  executioner:[{id:'zap',s:'hard',r:'Оглушает'},{id:'mini_pekka',s:'hard',r:'Высокий урон'},{id:'fireball',s:'medium',r:'Убивает'}],
+  e_giant:[{id:'inferno_dragon',s:'hard',r:'Прожигает высокое HP'},{id:'inferno_tower',s:'hard',r:'Держит одиночного'},{id:'mini_pekka',s:'medium',r:'Высокий урон за удар'}],
+  lumberjack:[{id:'mini_pekka',s:'hard',r:'Убивает без ярости'},{id:'tesla',s:'medium',r:'Держит и наносит урон'},{id:'knight',s:'medium',r:'Танкует урон'}],
+  h_archer_queen:[{id:'mega_minion',s:'hard',r:'Атакует невидимого'},{id:'bats',s:'hard',r:'Рой находит невидимого'},{id:'inferno_dragon',s:'hard',r:'Прожигает через способность'}],
+  h_golden_knight:[{id:'skeleton_army',s:'hard',r:'Рой блокирует рывок'},{id:'ice_spirit',s:'medium',r:'Замораживает'},{id:'valkyrie',s:'hard',r:'Выдерживает и убивает'}],
+};
+
+const DECK_COUNTERS={
+  'Хог-цикл':{desc:'Наездник + дешёвые карты',counters:[{id:'cannon',s:'hard',r:'Отвлекает Наездника'},{id:'tesla',s:'hard',r:'Сильная защита'},{id:'inferno_tower',s:'medium',r:'Держит Наездника'},{id:'tornado',s:'hard',r:'Стягивает в здание'},{id:'mini_pekka',s:'hard',r:'Убивает с 2 ударов'},{id:'skeleton_army',s:'hard',r:'Останавливает рывок'}]},
+  'Голем-Найт':{desc:'Голем + поддержка сзади',counters:[{id:'inferno_dragon',s:'hard',r:'Прожигает голема'},{id:'lightning',s:'hard',r:'Убивает поддержку'},{id:'inferno_tower',s:'hard',r:'Держит голема'},{id:'bandit',s:'medium',r:'Быстрая контратака'},{id:'miner',s:'soft',r:'Давление на башню'}]},
+  'Лава-Пупс':{desc:'Лавовый пёс + воздух',counters:[{id:'mega_minion',s:'hard',r:'Убивает воздух'},{id:'musketeer',s:'hard',r:'Ранговый урон'},{id:'arrows',s:'medium',r:'Убивает осколки'},{id:'electro_wizard',s:'hard',r:'Электро-урон'}]},
+  'Мортира-цикл':{desc:'Мортира + дешёвые карты',counters:[{id:'earthquake',s:'hard',r:'Двойной урон по зданиям'},{id:'goblin_drill',s:'hard',r:'Бурит мимо'},{id:'lightning',s:'hard',r:'Уничтожает'},{id:'rocket',s:'medium',r:'Хороший урон'}]},
+  'Арбалет':{desc:'Арбалет + защита',counters:[{id:'rocket',s:'hard',r:'Уничтожает арбалет'},{id:'lightning',s:'hard',r:'Мгновенно'},{id:'goblin_drill',s:'hard',r:'Бурит мимо'},{id:'pekka',s:'medium',r:'Быстро ломает'},{id:'mini_pekka',s:'hard',r:'Разрушает'}]},
+  'Бур-Яд':{desc:'Гоблинский бур + Яд',counters:[{id:'fireball',s:'hard',r:'Убивает гоблинов и бур'},{id:'tornado',s:'hard',r:'Стягивает гоблинов'},{id:'rocket',s:'hard',r:'Уничтожает бур'},{id:'lightning',s:'medium',r:'Мощный урон'},{id:'goblin_cage',s:'medium',r:'Блокирует гоблинов'}]},
+  'П.Е.К.К.А-мост':{desc:'П.Е.К.К.А + мостовое давление',counters:[{id:'inferno_dragon',s:'hard',r:'Прожигает П.Е.К.К.А'},{id:'skeleton_army',s:'hard',r:'Рой блокирует'},{id:'inferno_tower',s:'hard',r:'Держит'},{id:'tornado',s:'medium',r:'Стягивает под здание'}]},
+};
+
+function setCTab(btn,t){
+  counterTab=t;
+  document.querySelectorAll('.ctab').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  selCounter=null;
+  document.getElementById('counter-result').style.display='none';
+  renderCounterGrid();
+}
+
+function renderCounterGrid(){
+  const grid=document.getElementById('counter-grid');
+  const q=(document.getElementById('csearch').value||'').toLowerCase();
+  grid.innerHTML='';
+  if(counterTab==='deck'){
+    Object.keys(DECK_COUNTERS).forEach(key=>{
+      const d=DECK_COUNTERS[key];
+      const div=document.createElement('div');
+      div.className='counter-card'+(selCounter===key?' selected':'');
+      div.style.cssText='aspect-ratio:auto;padding:8px;min-height:50px;flex-direction:row;gap:6px;font-size:.72rem;font-weight:600;text-align:center;word-break:break-word';
+      div.innerHTML=`<div>${d.desc}</div>`;
+      div.onclick=()=>showDeckCounterFor(key,div);
+      grid.appendChild(div);
+    });
+    return;
+  }
+  CARDS.forEach(c=>{
+    if(q&&!c.name.toLowerCase().includes(q))return;
+    const div=document.createElement('div');
+    div.className='counter-card'+(selCounter===c.id?' selected':'');
+    div.innerHTML=`<div class="card-bg t-${c.type}" style="position:absolute;inset:0;opacity:.1"></div><span style="position:absolute;top:2px;left:3px;font-size:.62rem;font-weight:800;color:#d8b0ff;background:#00000066;border-radius:3px;padding:0 2px;z-index:2">${c.cost}</span>${cardImg(c.name,'card-img')}<span style="font-size:.44rem;font-weight:600;text-align:center;z-index:1">${c.name}</span>`;
+    div.onclick=()=>showCardCounter(c.id,div);
+    grid.appendChild(div);
+  });
+}
+
+function showCardCounter(id,el){
+  selCounter=id;
+  document.querySelectorAll('.counter-card').forEach(c=>c.classList.remove('selected'));
+  el.classList.add('selected');
+  const ctrs=COUNTERS[id];
+  const c=byId(id);
+  const res=document.getElementById('counter-result');
+  if(!ctrs||!ctrs.length){
+    res.style.display='block';
+    res.innerHTML=`<div class="counter-result"><div class="counter-result-title">🛡 Контр против: ${c?.name||id}</div><div class="no-counter">Данных по этой карте пока нет</div></div>`;
+    return;
+  }
+  const items=ctrs.map(ct=>{
+    const cc=byId(ct.id);
+    const badge=ct.s==='hard'?'<span class="badge-strength bs-hard">Жёсткий</span>':ct.s==='medium'?'<span class="badge-strength bs-medium">Средний</span>':'<span class="badge-strength bs-soft">Слабый</span>';
+    return `<div class="counter-item"><div style="width:54px;height:54px;display:flex;align-items:center;justify-content:center">${cardImg(cc?.name||ct.id,'counter-item-img')}</div><span class="counter-item-name">${cc?.name||ct.id}</span>${badge}<span class="counter-item-reason">${ct.r}</span></div>`;
+  }).join('');
+  res.style.display='block';
+  res.innerHTML=`<div class="counter-result"><div class="counter-result-title">🛡 Контр против: ${c?.name} (${c?.cost}💎)</div><div class="counter-list">${items}</div><div class="counter-why"><b>Легенда:</b> <span class="badge-strength bs-hard">Жёсткий</span> — уничтожает, <span class="badge-strength bs-medium">Средний</span> — останавливает, <span class="badge-strength bs-soft">Слабый</span> — помогает</div></div>`;
+}
+
+function showDeckCounterFor(key,el){
+  selCounter=key;
+  document.querySelectorAll('.counter-card').forEach(c=>c.classList.remove('selected'));
+  el.classList.add('selected');
+  const d=DECK_COUNTERS[key];
+  const items=d.counters.map(ct=>{
+    const cc=byId(ct.id);
+    const badge=ct.s==='hard'?'<span class="badge-strength bs-hard">Жёсткий</span>':ct.s==='medium'?'<span class="badge-strength bs-medium">Средний</span>':'<span class="badge-strength bs-soft">Слабый</span>';
+    return `<div class="counter-item"><div style="width:54px;height:54px;display:flex;align-items:center;justify-content:center">${cardImg(cc?.name||ct.id,'counter-item-img')}</div><span class="counter-item-name">${cc?.name||ct.id}</span>${badge}<span class="counter-item-reason">${ct.r}</span></div>`;
+  }).join('');
+  const res=document.getElementById('counter-result');
+  res.style.display='block';
+  res.innerHTML=`<div class="counter-result"><div class="counter-result-title">🛡 Как контрить: ${d.desc}</div><div class="counter-list">${items}</div></div>`;
+}
+
+function showDeckCounter(){
+  const allIds=[...deck,...evoSlots,...heroSlots];
+  if(!allIds.length){toast('Сначала добавьте карты!',false);return;}
+  const res=document.getElementById('deck-counter-result');
+  const countersMap={};
+  allIds.forEach(id=>{
+    const ctrs=COUNTERS[id]||[];
+    ctrs.forEach(ct=>{
+      if(!countersMap[ct.id])countersMap[ct.id]={id:ct.id,count:0,reasons:[]};
+      countersMap[ct.id].count++;
+      countersMap[ct.id].reasons.push(byId(id)?.name||id);
+      if(ct.s==='hard')countersMap[ct.id].count++;
+    });
+  });
+  const sorted=Object.values(countersMap).sort((a,b)=>b.count-a.count).slice(0,12);
+  if(!sorted.length){res.style.display='block';res.innerHTML='<div class="no-counter">Нет данных по контр-пикам</div>';return;}
+  let html='<div style="font-size:.78rem;font-weight:700;color:var(--gold);margin-bottom:8px">🛡 Чем враг может контрить твою колоду:</div><div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(64px,1fr));gap:6px">';
+  sorted.forEach(ct=>{
+    const cc=byId(ct.id);
+    html+=`<div class="counter-item"><div style="width:54px;height:54px;display:flex;align-items:center;justify-content:center">${cardImg(cc?.name||ct.id,'counter-item-img')}</div><span class="counter-item-name">${cc?.name||ct.id}</span><span class="counter-item-reason">${ct.reasons.slice(0,2).join(', ')}</span></div>`;
+  });
+  html+='</div>';
+  res.style.display='block';res.innerHTML=html;
+  res.scrollIntoView({behavior:'smooth',block:'nearest'});
+}
+
+// ── ГЛОБАЛЬНЫЙ ПОИСК ─────────────────────────────────────────────
+function gsSearch(q){
+  const res=document.getElementById('gs-results');
+  q=q.trim();
+  if(q.length<1){res.classList.remove('open');res.innerHTML='';return;}
+  const ql=q.toLowerCase();
+  const allDeck=new Set([...deck,...evoSlots,...heroSlots]);
+
+  // Ищем базовые карты
+  const baseMatches=CARDS.filter(c=>c.name.toLowerCase().includes(ql));
+  // Для каждой базовой карты ищем эво и героев по имени
+  // Ищем эво напрямую
+  const evoMatches=EVOS.filter(c=>c.name.toLowerCase().includes(ql)||
+    (c.base&&c.base.toLowerCase().includes(ql)));
+  // Ищем героев
+  const heroMatches=HEROES.filter(c=>c.name.toLowerCase().includes(ql));
+
+  if(!baseMatches.length&&!evoMatches.length&&!heroMatches.length){
+    res.classList.add('open');
+    res.innerHTML='<div class="gs-empty">Ничего не найдено 🔍</div>';
+    return;
+  }
+
+  let html='';
+
+  // Группируем: сначала показываем карту + её эво + её героя если имена совпадают
+  const shown=new Set();
+
+  // Для базовых карт
+  if(baseMatches.length){
+    baseMatches.forEach(base=>{
+      if(shown.has(base.id))return;
+      shown.add(base.id);
+
+      // Найти эволюцию этой карты
+      const relatedEvos=EVOS.filter(e=>e.base&&e.base.toLowerCase()===base.name.toLowerCase());
+      // Найти героя с похожим именем
+      const relatedHeroes=HEROES.filter(h=>h.name.toLowerCase().includes(base.name.toLowerCase().split(' ')[0])||base.name.toLowerCase().includes(h.name.toLowerCase().replace('герой ','').replace('королева ','').split(' ')[0]));
+
+      html+=`<div class="gs-group">`;
+      html+=`<div class="gs-header">🃏 ${base.name}</div>`;
+      html+=`<div class="gs-cards-row">`;
+      html+=gsCardHtml(base,allDeck,false,false);
+      relatedEvos.forEach(e=>{if(!shown.has(e.id)){shown.add(e.id);html+=gsCardHtml(e,allDeck,true,false);}});
+      relatedHeroes.forEach(h=>{if(!shown.has(h.id)){shown.add(h.id);html+=gsCardHtml(h,allDeck,false,true);}});
+      html+=`</div></div>`;
+    });
+  }
+
+  // Оставшиеся эво (если не вошли выше)
+  const leftEvos=evoMatches.filter(e=>!shown.has(e.id));
+  if(leftEvos.length){
+    html+=`<div class="gs-group"><div class="gs-header">⚡ Эволюции</div><div class="gs-cards-row">`;
+    leftEvos.forEach(e=>{shown.add(e.id);html+=gsCardHtml(e,allDeck,true,false);});
+    html+=`</div></div>`;
+  }
+
+  // Оставшиеся герои
+  const leftHeroes=heroMatches.filter(h=>!shown.has(h.id));
+  if(leftHeroes.length){
+    html+=`<div class="gs-group"><div class="gs-header">🦸 Герои</div><div class="gs-cards-row">`;
+    leftHeroes.forEach(h=>{shown.add(h.id);html+=gsCardHtml(h,allDeck,false,true);});
+    html+=`</div></div>`;
+  }
+
+  res.classList.add('open');
+  res.innerHTML=html;
+}
+
+function gsCardHtml(c,allDeck,isEvo,isHero){
+  const inDeck=allDeck.has(c.id);
+  const tag=isEvo?`<span class="gs-card-tag tag-evo">ЭВО</span>`:isHero?`<span class="gs-card-tag tag-hero">🦸</span>`:(c.rarity==='champion'?`<span class="gs-card-tag tag-champ">ЧЕМ</span>`:'');
+  const url=imgUrl(c.name);
+  const img=url?`<img src="${url}" alt="${c.name}" onerror="this.style.display='none';this.nextElementSibling.style.display='block'"><span class="gs-card-fallback" style="display:none">${c.emoji||'❓'}</span>`:`<span class="gs-card-fallback">${c.emoji||'❓'}</span>`;
+  const borderClass=isEvo?'is-evo':isHero?'is-hero':'';
+  return `<div class="gs-card t-${c.type} ${borderClass}${inDeck?' in-deck':''}" onclick="addCard(byId('${c.id}'));gsSearch(document.getElementById('gs-input').value)">
+    <div class="gs-card-bg t-${c.type}"></div>
+    ${tag}
+    <span class="gs-card-cost">${c.cost}</span>
+    ${img}
+    <span class="gs-card-name">${c.name}</span>
+    <div class="gs-dot r-${c.rarity}"></div>
+  </div>`;
+}
+
+// Закрыть поиск при клике вне
+document.addEventListener('click',e=>{
+  if(!e.target.closest('.global-search-wrap')){
+    document.getElementById('gs-results').classList.remove('open');
+  }
+});
+document.getElementById('gs-input').addEventListener('focus',()=>{
+  const v=document.getElementById('gs-input').value;
+  if(v.trim().length>0)document.getElementById('gs-results').classList.add('open');
 });
 
-renderDeck();
+function setTab(b,t){curTab=t;document.querySelectorAll('.tab').forEach(x=>x.classList.remove('active'));b.classList.add('active');renderCatalog()}
+function fType(b,t){curType=t;document.querySelectorAll('[data-ftype]').forEach(x=>x.classList.remove('active'));b.classList.add('active');renderCatalog()}
+function fRar(b,r){curRar=r;document.querySelectorAll('[data-fra]').forEach(x=>x.classList.remove('active'));b.classList.add('active');renderCatalog()}
+function fSearch(q){curQ=q;renderCatalog()}
+
+// ── SAVE ─────────────────────────────────────────────────────────
+function openModal(){document.getElementById('din').value='';document.getElementById('mo').classList.add('open');setTimeout(()=>document.getElementById('din').focus(),50)}
+function closeMo(){document.getElementById('mo').classList.remove('open')}
+document.getElementById('mo').addEventListener('click',e=>{if(e.target===document.getElementById('mo'))closeMo()});
+document.addEventListener('keydown',e=>{if(e.key==='Escape')closeMo();if(e.key==='Enter'&&document.getElementById('mo').classList.contains('open'))saveDeck()});
+function saveDeck(){
+  const name=document.getElementById('din').value.trim()||'Моя колода';
+  const saved=getSaved();
+  saved.push({name,cards:[...deck],evos:[...evoSlots],heroes:[...heroSlots],date:Date.now()});
+  localStorage.setItem('cr_v5',JSON.stringify(saved));
+  closeMo();toast(`✓ «${name}» сохранена!`);renderSaved();
+}
+function getSaved(){try{return JSON.parse(localStorage.getItem('cr_v5')||'[]')}catch{return[]}}
+function renderSaved(){
+  const list=document.getElementById('saved-list'),saved=getSaved();
+  if(!saved.length){list.innerHTML='<p class="empty">Нет сохранённых колод.</p>';return}
+  list.innerHTML='';
+  saved.forEach((d,i)=>{
+    const row=document.createElement('div');row.className='saved-row';
+    const ids=[...(d.cards||[]),...(d.evos||[]),...(d.heroes||[])];
+    const avg=ids.length?ids.reduce((s,id)=>{const c=byId(id);return s+(c?c.cost:0)},0)/ids.length:0;
+    const minis=ids.map(id=>{const isE=EVO_IDS.has(id);const isH=HERO_IDS.has(id);const c=byId(id);const url=c?imgUrl(c.name):null;return`<div class="mc${isE?' mc-evo':isH?' mc-hero':''}" title="${c?.name||id}">${url?`<img src="${url}" style="width:22px;height:22px;object-fit:contain" onerror="this.outerHTML='${c?.emoji||'?'}'">`:c?.emoji||'?'}</div>`}).join('');
+    row.innerHTML=`<span class="saved-name">${esc(d.name)}</span><div class="saved-cards">${minis}</div><span class="saved-elixir">💎 ${avg.toFixed(1)}</span><button class="btn-load" onclick="loadDeck(${i})">Загрузить</button><button class="btn-del" onclick="delDeck(${i})">✕</button>`;
+    list.appendChild(row);
+  });
+}
+function loadDeck(i){const d=getSaved()[i];deck=[...(d.cards||[])];evoSlots=[...(d.evos||[])];heroSlots=[...(d.heroes||[])];lockedDeck=new Set();render();renderCatalog();window.scrollTo({top:0,behavior:'smooth'});toast(`📂 «${d.name}» загружена!`)}
+function delDeck(i){const saved=getSaved();const name=saved[i].name;saved.splice(i,1);localStorage.setItem('cr_v5',JSON.stringify(saved));renderSaved();toast(`🗑 «${name}» удалена`,false)}
+function byId(id){return ALL.find(c=>c.id===id)}
+function esc(s){return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')}
+let tt;
+function toast(msg,good=true){
+  const t=document.getElementById('toast');
+  t.textContent=msg;t.style.background=good?'#1b3a1b':'#3a1b1b';
+  t.style.border=`1px solid ${good?'var(--green)':'var(--red)'}`;t.style.color=good?'var(--green)':'var(--red)';
+  t.classList.add('show');clearTimeout(tt);tt=setTimeout(()=>t.classList.remove('show'),2400);
+}
 </script>
 </body>
 </html>
+
